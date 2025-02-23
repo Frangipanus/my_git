@@ -1,3 +1,5 @@
-open Unix
+open Parse
+open Exec_command
 
-let () = print_int (getpid ()) 
+let _ = exec_command @@ parse_bite  @@ ()  
+

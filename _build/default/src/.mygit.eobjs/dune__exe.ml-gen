@@ -9,8 +9,8 @@ module Exec_command = Dune__exe__Exec_command
 (** @canonical Dune__exe.Mygit *)
 module Mygit = Dune__exe__Mygit
 
-(** @canonical Dune__exe.Parse_args *)
-module Parse_args = Dune__exe__Parse_args
+(** @canonical Dune__exe.Parse *)
+module Parse = Dune__exe__Parse
 
 (** @canonical Dune__exe.Structure *)
 module Structure = Dune__exe__Structure
