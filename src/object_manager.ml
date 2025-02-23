@@ -95,3 +95,6 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
     with 
         |Not_A_Repo ->Printf.printf "%s\n" "Path is not in a bite repo"
         
+let cat_file types obj = 
+    let acc = decomp_obj "." (sha1_hash (obj)) in 
+    Printf.printf "%s\n" acc;
