@@ -19,7 +19,7 @@ let rec find_repo (path : string) =
 
 end
 
-   
-let acc = Object_manager.test
+let acc = Object_manager.test 
+let () = Printf.printf "%s" acc 
 
 

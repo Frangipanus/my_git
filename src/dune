@@ -1,6 +1,7 @@
 (executable
   (name mygit)
-  (libraries unix cryptokit)
+  (libraries unix cryptokit digestif)
   
   (promote (until-clean)) 
 )
+(env (dev (flags (:standard -warn-error -A))))
