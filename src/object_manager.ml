@@ -39,4 +39,3 @@ let decompress_file source dest =
   Gzip.close_in gz_file;
   close_out oc
 
-let test = sha1_hash "nigger"
