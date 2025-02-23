@@ -1,4 +1,3 @@
-open Unix
 
 exception Found
 let has_git path = 
