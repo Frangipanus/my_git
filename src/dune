@@ -1,5 +1,6 @@
 (executable
   (name mygit)
-  (libraries unix)
+  (libraries unix cryptokit)
+  
   (promote (until-clean)) 
 )
