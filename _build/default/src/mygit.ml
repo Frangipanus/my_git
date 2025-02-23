@@ -4,23 +4,13 @@ open Unix
 (*Fonction pour trouver la racine du repo a partir d'un path*)
 exception Not_A_Repo
 
-let equal_node n1 n2 = 
-  (n1.st_dev = n2.st_dev) && (n1.st_ino = n2.st_ino)
 
-let rec find_repo (path : string) = 
-  if C_init.has_bite path then path else begin 
-  let acc = path^"/.." in 
-  let node1 = Unix.stat path in 
-  let node2 = Unix.stat acc in
-  if equal_node node1 node2 then (Printf.printf "%s\n" path;raise Not_A_Repo)
-  else begin 
-    find_repo acc
-  end
+let () = Object_manager.compress_file "test.txt" "test2.zip"
 
-end
+let nul = string_of_int (0x00)
+let acc = Object_manager.sha1_hash ("Paulo"^nul^"Hello world")
 
-let acc = Object_manager.test 
-let () = Object_manager.compress_file "test.txt" "test.zip"
-let () = Object_manager.decompress_file "test.zip" "test2.txt"
-
-
+let () = Object_manager.comp_obj "." "Hello world" ("Paulo"^nul)
+let zebi = Object_manager.decomp_obj "." acc
+let () = Object_manager.cat_file "blob" acc
+let () = Printf.printf "%s\n" zebi
