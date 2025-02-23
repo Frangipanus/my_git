@@ -9,6 +9,9 @@ module Exec_command = Dune__exe__Exec_command
 (** @canonical Dune__exe.Mygit *)
 module Mygit = Dune__exe__Mygit
 
+(** @canonical Dune__exe.Object_manager *)
+module Object_manager = Dune__exe__Object_manager
+
 (** @canonical Dune__exe.Parse *)
 module Parse = Dune__exe__Parse
 
