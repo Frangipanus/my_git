@@ -25,6 +25,6 @@ let init path =
   let _ = Unix.openfile ".bite/description" ([Unix.O_CREAT]) 0o777 in 
   ()
 
-let () = init "."
+
 
   
