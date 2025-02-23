@@ -1,6 +1,6 @@
 (executable
   (name mygit)
-  (libraries unix cryptokit digestif camlzip zlib)
+  (libraries unix digestif camlzip)
   
   (promote (until-clean)) 
 )
