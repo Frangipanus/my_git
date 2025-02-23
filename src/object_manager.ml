@@ -69,6 +69,8 @@ Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
 exception Not_An_Object
 let decomp_obj bite_path sha = 
     let path = bite_path^"/.bite/objects/"^(String.make 1 sha.[0])^(String.make 1 sha.[1]) in 
+    Printf.printf "hash= %s" sha;
+    Printf.printf "%s = path\n" path; 
     if Sys.file_exists path then 
         (if Sys.file_exists (path^"/"^(String.sub sha 2 (String.length sha -2))) then (
             let file_path = (path^"/"^(String.sub sha 2 (String.length sha -2))) in 
@@ -82,6 +84,7 @@ let decomp_obj bite_path sha =
 let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le dossier ou est l'objet*)
     let file = header^obj in 
     let hashed = sha1_hash file in 
+
     try let accu = (find_repo obj_path) in let path =accu^"/.bite/objects/"^(String.make 1 hashed.[0])^(String.make 1 hashed.[1]) in
     if Sys.file_exists path then (
         let oc = open_out (obj_path^"/_ILP") in
@@ -91,10 +94,14 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
         close_out oc;
         compress_file (obj_path^"/_ILP") (path^"/"^(String.sub hashed 2 (String.length hashed -2))))
     else
-        (mkdir path 0o777;compress_file obj_path (path^(String.sub file 2 (String.length file -2))))
+        (mkdir path 0o777;compress_file obj_path (path^"/"^(String.sub hashed 2 (String.length hashed -2))))
     with 
         |Not_A_Repo ->Printf.printf "%s\n" "Path is not in a bite repo"
         
 let cat_file types obj = 
-    let acc = decomp_obj "." (sha1_hash (obj)) in 
-    Printf.printf "%s\n" acc;
+    let acc = decomp_obj "."  (obj) in 
+    let nul = (string_of_int (0x00)).[0] in 
+    let lst = String.split_on_char nul acc in 
+    match types, lst with 
+    |"blob", _::q::[] -> Printf.printf "%s\n" q; (*en vrai faut enelver le header je ferai ca quand je comprednrai si il est dans obj*)
+    |_ -> failwith "pas implem"
