@@ -1,4 +1,4 @@
 (executable
-  (name exec_command)
+  (name mygit)
   (promote (until-clean)) 
 )
