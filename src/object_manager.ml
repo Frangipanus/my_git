@@ -39,3 +39,25 @@ let decompress_file source dest =
   Gzip.close_in gz_file;
   close_out oc
 
+let read_whole_file filename =
+  (* open_in_bin works correctly on Unix and Windows *)
+  let ch = open_in_bin filename in
+  let s = really_input_string ch (in_channel_length ch) in
+  close_in ch;
+  s
+
+
+(*prend le sha et le bite_path et revoie un objet en string avec le header
+Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
+exception Not_An_Object
+let decomp_obj bite_path sha = 
+    let path = bite_path^"/.bite/objects/"^sha[0]^sha[1] in 
+    if Sys.file_exists path then 
+        (if Sys.file_exists path^(String.sub sha 2 (String.length sha)) then 
+            (decompress_file (path^(String.sub sha 2 (String.length sha)) (path^"/_ILP"));
+            let acc = read_whole_file (path^"/_ILP") (*La on a l'objet decompresser*))
+        else
+            raise Not_An_Object)
+    else 
+        raise Not_An_Object
+
