@@ -15,7 +15,9 @@ let has_git path =
     |Not_found -> false
 
 let init path = 
-  if has_git path then Printf.printf "Echec: le répertoire a déja un dossier .git. Le supprimer et retenter.";
+  if has_git path then (
+    Printf.printf "Echec: le répertoire a déja un dossier .git. Le supprimer et retenter.";
+     exit 1);
   Unix.mkdir ".bite" 0o777;
   Unix.mkdir ".bite/objects" 0o777;
   Unix.mkdir ".bite/refs" 0o777;
@@ -24,6 +26,4 @@ let init path =
   let _ = Unix.openfile ".bite/description" ([Unix.O_CREAT]) 0o777 in 
   ()
 
-
-
-  
+ 

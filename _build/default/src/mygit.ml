@@ -1,3 +1,2 @@
-open Unix
+let () = C_init.init "."
 
-let () = print_int (getpid ()) 

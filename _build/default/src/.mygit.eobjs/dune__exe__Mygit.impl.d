@@ -1,1 +1,1 @@
-src/mygit.ml: Unix
+src/mygit.ml: C_init
