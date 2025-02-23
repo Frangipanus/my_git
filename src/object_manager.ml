@@ -1,13 +1,9 @@
-let sha1_hash input =
+let sha1_hash (input : string) : string =
     let hash = Digestif.SHA1.digest_string input in
     Digestif.SHA1.to_hex hash
 
-
-
-
-
 let buffer_size = 4096
-let compress_file source dest =
+let compress_file (source : string) (dest : string) : unit =
   let gz_file = Gzip.open_out ~level:9 dest in
   let buffer = Bytes.make buffer_size '*' in
   let ic = open_in_bin source in
@@ -23,7 +19,7 @@ let compress_file source dest =
   Gzip.close_out gz_file;
   close_in ic
 
-let decompress_file source dest =
+let decompress_file (source : string) (dest : string) : unit =
   let gz_file = Gzip.open_in source in
   let buffer = Bytes.make buffer_size '*' in
   let oc = open_out_bin dest in
@@ -39,4 +35,4 @@ let decompress_file source dest =
   Gzip.close_in gz_file;
   close_out oc
 
-let test = sha1_hash "nigger"
+let test = sha1_hash "NOUS RIONS, MAIS JAMAIS EN MÊME TEMPS QUE VOUS"
