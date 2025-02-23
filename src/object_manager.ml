@@ -87,7 +87,7 @@ let decomp_obj bite_path sha =
     else 
         raise Not_An_Object
 
-let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le dossier ou est l'objet*)
+let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le dossier ou est l'objet, fauda mettre la taille mais ca c'est pour plus tard tkt marius ca sera rapide*)
     let file = header^obj in 
     let hashed = sha1_hash file in 
 
@@ -118,4 +118,5 @@ let hash_object_stdout types file =
     let file_str = read_whole_file file in 
     let length = String.length file_str in 
     let acc = types^space^(string_of_int length)^nul^file_str in 
-    ()
+    let res = sha1_hash acc in 
+    Printf.printf "%s\n" res
