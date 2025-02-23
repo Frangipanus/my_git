@@ -3,5 +3,5 @@ Fichier structure.ml : les structures  (ce qu'est un repo, un commit, une comman
 Fichier parse_command.ml : prend une commande en string, et la parse comme un type de donnée commande 
 Fichier exec_command.ml : prend une commande en type de données ,et fais le boulot
 Fichier mygit.ml : le main 
-1 fichier par commande ensuite (pour séparer le plus possible le travail, on pourra fusionner ensuite pour être propre si on veut) 
+1 fichier par commande ensuite <c_"nom de commande">(pour séparer le plus possible le travail, on pourra fusionner ensuite pour être propre si on veut) 
 
