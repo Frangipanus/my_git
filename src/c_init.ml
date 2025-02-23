@@ -1,6 +1,6 @@
-
+open Unix
 let has_bite (path : string) =
-  let bitepath = path^".bite" in
+  let bitepath = path^"/.bite" in
   if Sys.file_exists bitepath then Sys.is_directory bitepath else false
   
 let c_init (path : string) : unit = 

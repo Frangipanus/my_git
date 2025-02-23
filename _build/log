@@ -13,9 +13,11 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /usr/bin/ocamlc.opt -config > /tmp/dune_d1cee2_output
-$ (cd _build/default && /usr/bin/ocamldep.opt -modules -impl src/mygit.ml) > _build/default/src/.mygit.eobjs/dune__exe__Mygit.impl.d
+$ /usr/bin/ocamlc.opt -config > /tmp/dune_7625bb_output
+$ (cd _build/default && /usr/bin/ocamldep.opt -modules -impl src/c_init.ml) > _build/default/src/.mygit.eobjs/dune__exe__C_init.impl.d
+$ (cd _build/default && /usr/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I src/.mygit.eobjs/byte -no-alias-deps -opaque -open Dune__exe -o src/.mygit.eobjs/byte/dune__exe__C_init.cmo -c -impl src/c_init.ml)
 $ (cd _build/default && /usr/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I src/.mygit.eobjs/byte -no-alias-deps -opaque -open Dune__exe -o src/.mygit.eobjs/byte/dune__exe__Mygit.cmo -c -impl src/mygit.ml)
+$ (cd _build/default && /usr/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I src/.mygit.eobjs/byte -I src/.mygit.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -open Dune__exe -o src/.mygit.eobjs/native/dune__exe__C_init.cmx -c -impl src/c_init.ml)
 $ (cd _build/default && /usr/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I src/.mygit.eobjs/byte -I src/.mygit.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -open Dune__exe -o src/.mygit.eobjs/native/dune__exe__Mygit.cmx -c -impl src/mygit.ml)
 $ (cd _build/default && /usr/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -o src/mygit.exe /usr/lib/ocaml/unix.cmxa -I /usr/lib/ocaml src/.mygit.eobjs/native/dune__exe.cmx src/.mygit.eobjs/native/dune__exe__C_init.cmx src/.mygit.eobjs/native/dune__exe__Mygit.cmx)
 # Promoting "_build/default/src/mygit.exe" to "src/mygit.exe"
