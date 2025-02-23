@@ -1,0 +1,4 @@
+(executable
+  (name exec_command)
+  (promote (until-clean)) 
+)
