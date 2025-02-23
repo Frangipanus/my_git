@@ -1,0 +1,3 @@
+Fichier mygit.ml : contient les structures  (ce qu'est un repo, un commit, une commanden, etc) 
+Fichier parse_command.ml : prend une commande en string, et la parse comme un type de donnée commande 
+1 fichier par commande ensuite (pour séparer le plus possible le travail, on pourra fusionner ensuite pour être propre si on veut) 

@@ -5,3 +5,4 @@ type conf = A
 
 type repo = { path : string; conf : conf}
 
+type command = Init
