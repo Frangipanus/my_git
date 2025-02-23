@@ -1,5 +1,11 @@
 open Unix
 exception Not_A_Repo
+let decode_hex_string hex_string =
+    let byte_string = Hex.to_cstruct (`Hex hex_string) in
+    let decoded_string = Cstruct.to_string byte_string in
+    decoded_string
+let nul = decode_hex_string "00"
+let space = decode_hex_string "20"
 let sha1_hash input =
     let hash = Digestif.SHA1.digest_string input in
     Digestif.SHA1.to_hex hash
@@ -100,8 +106,16 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
         
 let cat_file types obj = 
     let acc = decomp_obj "."  (obj) in 
-    let nul = (string_of_int (0x00)).[0] in 
-    let lst = String.split_on_char nul acc in 
+    let lst = String.split_on_char (nul).[0] acc in 
     match types, lst with 
     |"blob", _::q::[] -> Printf.printf "%s\n" q; (*en vrai faut enelver le header je ferai ca quand je comprednrai si il est dans obj*)
     |_ -> failwith "pas implem"
+
+
+
+
+let hash_object_stdout types file = 
+    let file_str = read_whole_file file in 
+    let length = String.length file_str in 
+    let acc = types^space^(string_of_int length)^nul^file_str in 
+    ()

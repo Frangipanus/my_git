@@ -1,11 +1,8 @@
 (executable
   (name mygit)
-<<<<<<< HEAD
-  (libraries unix cryptokit digestif camlzip zlib )
-=======
-  (libraries unix digestif camlzip)
->>>>>>> a38282b76f002632133d596bc13f4644d9c009da
-  
+
+  (libraries unix cryptokit digestif camlzip zlib hex)
+
   (promote (until-clean)) 
 )
 (env (dev (flags (:standard -warn-error -A))))
