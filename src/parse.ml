@@ -12,18 +12,16 @@ let parse_init (l : string list) : command =
   | [] -> Init "."
   | _ -> (print_w_help "Mauvais nombre d'arguments"; exit 1)
 
-
 (*Implémenter des regexp ici*)
 let parse_add (l : string list) : command = Add l
 
 let parse_remove (l : string list) : command = Remove l
-(*
+
 let parse_commit (l : string list) : command =
   match l with
-  | "-m" :: [msg] -> Commit tl
+  | "-m" :: [msg] -> Commit msg
   | [] -> Commit ""
   | _ -> (print_w_help  "Mauvais nombre d'arguments"; exit 1)
-*)
     
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
