@@ -1,4 +1,5 @@
 (executable
   (name mygit)
+  (libraries unix)
   (promote (until-clean)) 
 )
