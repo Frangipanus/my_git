@@ -20,6 +20,7 @@ let rec find_repo (path : string) =
 end
 
 let acc = Object_manager.test 
-let () = Printf.printf "%s" acc 
+let () = Object_manager.compress_file "test.txt" "test.zip"
+let () = Object_manager.decompress_file "test.zip" "test2.txt"
 
 
