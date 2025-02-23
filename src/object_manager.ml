@@ -1,28 +1,43 @@
+open Unix
+exception Not_A_Repo
 let sha1_hash input =
     let hash = Digestif.SHA1.digest_string input in
     Digestif.SHA1.to_hex hash
 
 
-
+    let equal_node n1 n2 = 
+        (n1.st_dev = n2.st_dev) && (n1.st_ino = n2.st_ino)
+      
+    let rec find_repo (path : string) = 
+        if C_init.has_bite path then path else begin 
+        let acc = path^"/.." in 
+        let node1 = Unix.stat path in 
+        let node2 = Unix.stat acc in
+        if equal_node node1 node2 then (Printf.printf "%s\n" path;raise Not_A_Repo)
+        else begin 
+          find_repo acc
+        end
+      
+      end
 
 
 let buffer_size = 4096
 let compress_file source dest =
-  let gz_file = Gzip.open_out ~level:9 dest in
-  let buffer = Bytes.make buffer_size '*' in
-  let ic = open_in_bin source in
-  let rec aux () =
-    let len = input ic buffer 0 buffer_size in
-    if len <> 0 then
-      begin
-        Gzip.output gz_file buffer 0 len;
-        aux ()
-      end
-  in
-  aux ();
-  Gzip.close_out gz_file;
-  close_in ic
-
+    let gz_file = Gzip.open_out ~level:9 dest in
+    let buffer = Bytes.make buffer_size '*' in
+    let ic = In_channel.open_bin source in
+    Printf.printf "%s %s\n" source dest;
+    let rec aux () =
+      let len = In_channel.input ic buffer 0 buffer_size in
+      if len <> 0 then
+        begin
+          Gzip.output gz_file buffer 0 len;
+          aux ()
+        end
+    in
+    aux ();
+    Gzip.close_out gz_file;
+    In_channel.close ic
 let decompress_file source dest =
   let gz_file = Gzip.open_in source in
   let buffer = Bytes.make buffer_size '*' in
@@ -36,6 +51,8 @@ let decompress_file source dest =
       end
   in
   aux ();
+ 
+
   Gzip.close_in gz_file;
   close_out oc
 
@@ -51,13 +68,30 @@ let read_whole_file filename =
 Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
 exception Not_An_Object
 let decomp_obj bite_path sha = 
-    let path = bite_path^"/.bite/objects/"^sha[0]^sha[1] in 
+    let path = bite_path^"/.bite/objects/"^(String.make 1 sha.[0])^(String.make 1 sha.[1]) in 
     if Sys.file_exists path then 
-        (if Sys.file_exists path^(String.sub sha 2 (String.length sha)) then 
-            (decompress_file (path^(String.sub sha 2 (String.length sha)) (path^"/_ILP"));
-            let acc = read_whole_file (path^"/_ILP") (*La on a l'objet decompresser*))
+        (if Sys.file_exists (path^"/"^(String.sub sha 2 (String.length sha -2))) then (
+            let file_path = (path^"/"^(String.sub sha 2 (String.length sha -2))) in 
+            (decompress_file file_path (path^"/_ILP"));
+            let acc = read_whole_file (path^"/_ILP")  in acc(*La on a l'objet decompresser*))
         else
             raise Not_An_Object)
     else 
         raise Not_An_Object
 
+let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le dossier ou est l'objet*)
+    let file = header^obj in 
+    let hashed = sha1_hash file in 
+    try let accu = (find_repo obj_path) in let path =accu^"/.bite/objects/"^(String.make 1 hashed.[0])^(String.make 1 hashed.[1]) in
+    if Sys.file_exists path then (
+        let oc = open_out (obj_path^"/_ILP") in
+        (* create or truncate file, return channel *)
+        Printf.fprintf oc "%s" file;
+        (* write something *)
+        close_out oc;
+        compress_file (obj_path^"/_ILP") (path^"/"^(String.sub hashed 2 (String.length hashed -2))))
+    else
+        (mkdir path 0o777;compress_file obj_path (path^(String.sub file 2 (String.length file -2))))
+    with 
+        |Not_A_Repo ->Printf.printf "%s\n" "Path is not in a bite repo"
+        
