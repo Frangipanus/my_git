@@ -3,6 +3,7 @@ open Unix
 
 (****************Fonctions utilitaires sur les texte et repo***********************************)
 exception Not_A_Repo
+
 let decode_hex_string hex_string =
     let byte_string = Hex.to_cstruct (`Hex hex_string) in
     let decoded_string = Cstruct.to_string byte_string in
@@ -85,7 +86,9 @@ let log = ref [] (*Commit History.*)
 
 (*prend le sha et le bite_path et revoie un objet en string avec le header
 Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
+
 exception Not_An_Object
+
 let decomp_obj bite_path sha = 
     let path = bite_path^"/.bite/objects/"^(String.make 1 sha.[0])^(String.make 1 sha.[1]) in 
     Printf.printf "hash= %s" sha;
@@ -145,9 +148,6 @@ let hash_object_directory types file =
     let length = String.length file_str in 
     let head = types^space^(string_of_int length)^nul in
     comp_obj path file_str head 
-    
-
-
 
 let toutsauflepremier lst = 
     let rec aux  lst1 res = 

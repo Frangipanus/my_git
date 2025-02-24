@@ -8,4 +8,5 @@ type command =
   | Add of string list
   | Remove of string list
   | Cat of string * string
+  | Hash of string * string * bool (* type, fichier, true si on stocke dans le repo, false sinon *) 
   | Commit of string 
