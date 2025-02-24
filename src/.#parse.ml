@@ -1,1 +1,0 @@
-dalobiang@dalobiang-ThinkPad-T470s.60157:1740240965
