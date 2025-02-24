@@ -165,3 +165,5 @@ let parse_commit (commit : string) =  (*On prend en entrée un string décompres
     let commit = empty_commit in 
     let rec aux line = 
         match line with 
+        |[] -> ()
+        |h::q::t -> if h[]
