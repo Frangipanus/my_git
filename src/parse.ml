@@ -26,7 +26,7 @@ let parse_commit (l : string list) : command =
 
 let parse_catfile (l : string list) : command =
   match l with
-  | [otype, obj] -> Cat (otype, obj)
+  | [otype; obj] -> Cat (otype, obj)
   | _ -> (print_w_help "Mauvais nombre d'arguments"; exit 1)
 
 
