@@ -13,8 +13,4 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /home/paul/.opam/5.2.1/bin/ocamlc.opt -config > /tmp/dune_300e94_output
-$ (cd _build/default && /home/paul/.opam/5.2.1/bin/ocamldep.opt -modules -impl src/object_manager.ml) > _build/default/src/.mygit.eobjs/dune__exe__Object_manager.impl.d
-> File "src/object_manager.ml", line 136, characters 0-0:
-> Error: Syntax error
-[2]
+$ /home/paul/.opam/5.2.1/bin/ocamlc.opt -config > /tmp/dune_bfd442_output

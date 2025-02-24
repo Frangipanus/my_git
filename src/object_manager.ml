@@ -1,9 +1,14 @@
 open Unix
+
+
+(****************Fonctions utilitaires sur les texte et repo***********************************)
 exception Not_A_Repo
 let decode_hex_string hex_string =
     let byte_string = Hex.to_cstruct (`Hex hex_string) in
     let decoded_string = Cstruct.to_string byte_string in
     decoded_string
+
+
 let nul = decode_hex_string "00"
 let space = decode_hex_string "20"
 let sha1_hash input =
@@ -25,6 +30,18 @@ let rec find_repo (path : string) =
     end
   
   end
+
+let read_whole_file filename =
+  (* open_in_bin works correctly on Unix and Windows *)
+  let ch = open_in_bin filename in
+  let s = really_input_string ch (in_channel_length ch) in
+  close_in ch;
+  s
+
+let read_lines (file_name : string) : string list =
+    In_channel.with_open_text file_name In_channel.input_lines
+
+
 
 
 let buffer_size = 4096
@@ -62,14 +79,8 @@ let decompress_file source dest =
   Gzip.close_in gz_file;
   close_out oc
 
-let read_whole_file filename =
-  (* open_in_bin works correctly on Unix and Windows *)
-  let ch = open_in_bin filename in
-  let s = really_input_string ch (in_channel_length ch) in
-  close_in ch;
-  s
 
-
+(**************************Object managing**********************************)
 (*prend le sha et le bite_path et revoie un objet en string avec le header
 Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
 exception Not_An_Object
@@ -122,8 +133,8 @@ let hash_object_stdout types file =
 
 let hash_object_directory types file = 
     let path_to_file = "./"^file in 
-    let lst1 = String.split_on_char ("/") in 
-    let aux lst res = 
+    let lst1 = String.split_on_char ('/') path_to_file in 
+    let rec aux lst res = 
         match lst with 
         |h::q-> aux q (res^"/"^h)
         |_ -> res 
@@ -134,3 +145,23 @@ let hash_object_directory types file =
     let head = types^space^(string_of_int length)^nul in
     comp_obj path file_str head 
     
+type commit = {
+    tree : tree;
+    par : parent list option;
+    author : author;
+    commitor : commitor; 
+    gpgsig  : string option ;
+}
+
+and tree = string 
+and parent = string 
+and author = string 
+and commitor = string (*Temporaire*)
+
+let empty_commit = {tree = ""; par = ""; author = ""; commitor = "";gpgsig = ""}
+
+let parse_commit (commit : string) =  (*On prend en entrée un string décompresser et on renvoie un type commit*)
+    let lines = String.split_on_char '\n' commit in 
+    let commit = empty_commit in 
+    let rec aux line = 
+        match line with 
