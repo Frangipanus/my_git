@@ -122,7 +122,6 @@ let cat_file types obj_ident =
     |"blob", _::q::[] -> Printf.printf "%s\n" q; (*en vrai faut enelver le header je ferai ca quand je comprednrai si il est dans obj*)
     |_ -> failwith "pas implem"
 
-
 (*Les deux versions de hash-object, c'est le parsing qui dit laquelle on appelle. le type par default est blob si non précisé*)
 let hash_object_stdout types file = 
     let file_str = read_whole_file file in 
@@ -136,7 +135,7 @@ let hash_object_directory types file =
     let lst1 = String.split_on_char ('/') path_to_file in 
     let rec aux lst res = 
         match lst with 
-        |h::q-> aux q (res^"/"^h)
+        |h::q-> aux q (res^"/"^h) 
         |_ -> res 
     in 
     let path = aux lst1 "." in 
