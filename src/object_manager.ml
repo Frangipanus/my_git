@@ -145,25 +145,32 @@ let hash_object_directory types file =
     let head = types^space^(string_of_int length)^nul in
     comp_obj path file_str head 
     
-type commit = {
-    tree : tree;
-    par : parent list option;
-    author : author;
-    commitor : commitor; 
-    gpgsig  : string option ;
-}
 
-and tree = string 
-and parent = string 
-and author = string 
-and commitor = string (*Temporaire*)
 
-let empty_commit = {tree = ""; par = ""; author = ""; commitor = "";gpgsig = ""}
 
-let parse_commit (commit : string) =  (*On prend en entrée un string décompresser et on renvoie un type commit*)
+let toutsauflepremier lst = 
+    let rec aux  lst1 res = 
+        match lst1 with 
+        |[]-> res
+        |h ::q -> aux  q (res^h)
+    in match lst with 
+        |[] -> ""
+        |[_] -> ""
+        |_::q -> aux  q ""
+
+
+let parse_commit (commit : string) : (string*string) list=  (*On prend en entrée un string décompresser et on renvoie un type commit*)
     let lines = String.split_on_char '\n' commit in 
-    let commit = empty_commit in 
-    let rec aux line = 
+    let rec aux line  (res : (string*string) list) (a,b)= 
         match line with 
-        |[] -> ()
-        |h::q::t -> if h[]
+        |[] -> res, []
+        |h::q ->  if (String.length h) =0 then (res, line) else ( 
+            if h.[0] != ' ' then (let acc = (String.split_on_char ' ' h) in let acc2 = toutsauflepremier acc in 
+                                    aux q (res@[(a,b)]) (List.hd acc, acc2))
+                                else
+                                    (aux q res (a,b^(String.sub h 1 (String.length h -1)))))
+    in
+    let (key_value , message) = aux lines [] ("", "") in 
+    let message_vrai = toutsauflepremier (("ratio")::(message)) in 
+    key_value@["message", message_vrai]
+
