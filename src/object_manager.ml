@@ -81,6 +81,8 @@ let decompress_file source dest =
 
 
 (**************************Object managing**********************************)
+let log = ref [] (*Commit History.*)
+
 (*prend le sha et le bite_path et revoie un objet en string avec le header
 Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
 exception Not_An_Object
@@ -156,7 +158,7 @@ let toutsauflepremier lst =
         |[] -> ""
         |[_] -> ""
         |_::q -> aux  q ""
-
+ 
 
 let parse_commit (commit : string) : (string*string) list=  (*On prend en entrée un string décompresser et on renvoie un type commit*)
     let lines = String.split_on_char '\n' commit in 
@@ -171,5 +173,25 @@ let parse_commit (commit : string) : (string*string) list=  (*On prend en entré
     in
     let (key_value , message) = aux lines [] ("", "") in 
     let message_vrai = toutsauflepremier (("ratio")::(message)) in 
-    key_value@["message", message_vrai]
+    List.tl(key_value@["message", message_vrai])
 
+let write_commit commit = 
+    let rec aux lst acc = 
+        match lst with 
+        | (a,b)::q::t -> aux (q::t) (acc^a^" "^b^"\n")
+        |(a,b)::[] -> (acc ^"\n"^b)
+        |[] -> failwith "not a commit"
+    in aux commit ""
+
+let rec print_shit lst = 
+    match lst with 
+    | ("author",b)::q -> (Printf.printf "Author: %s\n" b; print_shit q)
+    | ("commbiter", b)::q -> (Printf.printf "Commitor: %s\n" b; print_shit q)
+    | ("message", b)::q -> (Printf.printf "%s\n" b; print_shit q)
+ 
+let git_log = 
+    let rec aux lst = match lst with 
+        |[] -> ()
+        |(sha, comm)::q -> (Printf.printf "commit %s\n" sha; print_shit comm; Printf.printf "\n"; aux q)
+    in
+    aux (!log)  
