@@ -11,20 +11,20 @@ let sha1_hash input =
     Digestif.SHA1.to_hex hash
 
 
-    let equal_node n1 n2 = 
-        (n1.st_dev = n2.st_dev) && (n1.st_ino = n2.st_ino)
-      
-    let rec find_repo (path : string) = 
-        if C_init.has_bite path then path else begin 
-        let acc = path^"/.." in 
-        let node1 = Unix.stat path in 
-        let node2 = Unix.stat acc in
-        if equal_node node1 node2 then (Printf.printf "%s\n" path;raise Not_A_Repo)
-        else begin 
-          find_repo acc
-        end
-      
-      end
+let equal_node n1 n2 = 
+    (n1.st_dev = n2.st_dev) && (n1.st_ino = n2.st_ino)
+  
+let rec find_repo (path : string) = 
+    if C_init.has_bite path then path else begin 
+    let acc = path^"/.." in 
+    let node1 = Unix.stat path in 
+    let node2 = Unix.stat acc in
+    if equal_node node1 node2 then (Printf.printf "%s\n" path;raise Not_A_Repo)
+    else begin 
+      find_repo acc
+    end
+  
+  end
 
 
 let buffer_size = 4096
@@ -87,7 +87,7 @@ let decomp_obj bite_path sha =
     else 
         raise Not_An_Object
 
-let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le dossier ou est l'objet, fauda mettre la taille mais ca c'est pour plus tard tkt marius ca sera rapide*)
+let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le DOSSIER ou est l'objet, fauda mettre la taille mais ca c'est pour plus tard tkt marius ca sera rapide*)
     let file = header^obj in 
     let hashed = sha1_hash file in 
 
@@ -104,19 +104,33 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
     with 
         |Not_A_Repo ->Printf.printf "%s\n" "Path is not in a bite repo"
         
-let cat_file types obj = 
-    let acc = decomp_obj "."  (obj) in 
-    let lst = String.split_on_char (nul).[0] acc in 
+let cat_file types obj_ident = 
+    let acc = decomp_obj (find_repo ".")  (obj_ident) in 
+    let lst = String.split_on_char (space).[0] acc in 
     match types, lst with 
     |"blob", _::q::[] -> Printf.printf "%s\n" q; (*en vrai faut enelver le header je ferai ca quand je comprednrai si il est dans obj*)
     |_ -> failwith "pas implem"
 
 
-
-
+(*Les deux versions de hash-object, c'est le parsing qui dit laquelle on appelle. le type par default est blob si non précisé*)
 let hash_object_stdout types file = 
     let file_str = read_whole_file file in 
     let length = String.length file_str in 
     let acc = types^space^(string_of_int length)^nul^file_str in 
     let res = sha1_hash acc in 
     Printf.printf "%s\n" res
+
+let hash_object_directory types file = 
+    let path_to_file = "./"^file in 
+    let lst1 = String.split_on_char ("/") in 
+    let aux lst res = 
+        match lst with 
+        |h::q-> aux q (res^"/"^h)
+        |_ -> res 
+    in 
+    let path = aux lst1 "." in 
+    let file_str = read_whole_file file in 
+    let length = String.length file_str in 
+    let head = types^space^(string_of_int length)^nul in
+    comp_obj path file_str head 
+    
