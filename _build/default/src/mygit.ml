@@ -1,6 +1,6 @@
 (*open Parse*)
 (*open Exec_command*)
-open Unix
+(* open Unix *)
 (*Fonction pour trouver la racine du repo a partir d'un path*)
 exception Not_A_Repo
 

@@ -7,4 +7,5 @@ type command =
   | Init of string 
   | Add of string list
   | Remove of string list
+  | Cat of string * string
   | Commit of string 
