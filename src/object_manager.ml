@@ -102,7 +102,7 @@ let decomp_obj bite_path sha =
             raise Not_An_Object)
     else 
         raise Not_An_Object
-
+(*renvoie le sha1 de l'object*)
 let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path est le DOSSIER ou est l'objet, fauda mettre la taille mais ca c'est pour plus tard tkt marius ca sera rapide*)
     let file = header^obj in 
     let hashed = sha1_hash file in 
@@ -114,9 +114,11 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
         Printf.fprintf oc "%s" file;
         (* write something *)
         close_out oc;
-        compress_file (obj_path^"/_ILP") (path^"/"^(String.sub hashed 2 (String.length hashed -2))))
+        compress_file (obj_path^"/_ILP") (path^"/"^(String.sub hashed 2 (String.length hashed -2))));
+        hashed
     else
-        (mkdir path 0o777;compress_file obj_path (path^"/"^(String.sub hashed 2 (String.length hashed -2))))
+        (mkdir path 0o777;compress_file obj_path (path^"/"^(String.sub hashed 2 (String.length hashed -2))));
+        hashed
     with 
         |Not_A_Repo ->Printf.printf "%s\n" "Path is not in a bite repo"
         
@@ -147,7 +149,7 @@ let hash_object_directory types file =
     let file_str = read_whole_file file in 
     let length = String.length file_str in 
     let head = types^space^(string_of_int length)^nul in
-    comp_obj path file_str head 
+    let _ = comp_obj path file_str head  in ()
 
 let toutsauflepremier lst = 
     let rec aux  lst1 res = 
@@ -179,15 +181,16 @@ let write_commit commit =
     let rec aux lst acc = 
         match lst with 
         | (a,b)::q::t -> aux (q::t) (acc^a^" "^b^"\n")
-        |(a,b)::[] -> (acc ^"\n"^b)
+        |(_,b)::[] -> (acc ^"\n"^b)
         |[] -> failwith "not a commit"
     in aux commit ""
 
 let rec print_shit lst = 
     match lst with 
-    | ("author",b)::q -> (Printf.printf "Author: %s\n" b; print_shit q)
+    | (a,b)::q  when a = "auhor"-> (Printf.printf "Author: %s\n" b; print_shit q)
     | ("commbiter", b)::q -> (Printf.printf "Commitor: %s\n" b; print_shit q)
     | ("message", b)::q -> (Printf.printf "%s\n" b; print_shit q)
+    |_ -> ()
  
 let git_log = 
     let rec aux lst = match lst with 
@@ -195,3 +198,67 @@ let git_log =
         |(sha, comm)::q -> (Printf.printf "commit %s\n" sha; print_shit comm; Printf.printf "\n"; aux q)
     in
     aux (!log)  
+
+let read_object path sha = (*Renvoie le header et l'object*)
+    let bite_path = find_repo path in 
+    let object_with_header = decomp_obj bite_path sha in 
+    let lst = String.split_on_char (nul.[0]) object_with_header in 
+    (List.hd lst,toutsauflepremier lst )
+
+let read_header head = (*Head n'a pas le null a la fin*)
+    let lst1 = String.split_on_char (space.[0]) head in 
+    let types = List.hd lst1 in 
+    let size = toutsauflepremier lst1 in 
+    (types, size)
+
+let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un file ou un dossier*)
+    let head, obj = read_object path sha in 
+    let types, size = read_header head in
+    match types with 
+    |"blob" -> treat_blob obj path
+    |"tree" -> treat_tree obj path 
+    |_ -> failwith "not yet"
+
+
+and treat_tree tree path  = (*tree est l'arbres*)
+    let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
+    List.iter (fun x -> let lst = String.split_on_char (space.[0]) x in 
+              let auto = List.hd lst in  
+              let acc = toutsauflepremier lst in 
+              let lst2 = String.split_on_char (nul.[0]) acc in 
+              let sha = List.hd lst2 in 
+              let path2 = path^"/"^(toutsauflepremier lst2) in 
+              treat_obj path sha) content
+
+and treat_blob blob path= 
+    let oc = open_out path in 
+    Printf.fprintf oc "%s" blob; 
+    close_out oc
+
+let checkout sha1 = 
+    let head, obj = read_object "." sha1 in 
+    let types, size = read_header head in
+    assert (String.equal types "commit");
+    let lst_assoc = parse_commit obj in 
+    List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." sha1 else ()) lst_assoc
+
+    
+    
+let rec bite_commit () =
+    let path = find_repo "." in 
+    let acc = opendir path in 
+    try while true do 
+        let file = readdir acc in 
+        if ((String.equal file ".") || (String.equal file "..") ||(String.equal file ".bite")) then () 
+        else (
+            if Sys.is_directory (path^file) then treat_dir (path^file) else treat_blob (path^file)
+        )
+    done 
+    with 
+    |End_of_file -> ()
+
+and treat_dir path = ()
+
+and treat_blob path = ()
+
+    
