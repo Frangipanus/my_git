@@ -9,4 +9,5 @@ type command =
   | Remove of string list
   | Cat of string * string
   | Hash of string * string * bool (* type, fichier, true si on stocke dans le repo, false sinon *) 
-  | Commit of string 
+  | Commit of string
+  | Log 

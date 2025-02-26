@@ -59,10 +59,12 @@ let parse_bite () : command =
   match args_as_l with
   | h  :: tl ->
      (match h with
-        | "init" -> parse_init tl 
-       | "add" -> parse_add tl
-       | "cat-file" -> parse_catfile tl
-       | "hash-object" -> parse_hash tl 
-       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
+      | "log" -> Log
+      | "init" -> parse_init tl 
+      | "add" -> parse_add tl
+      | "cat-file" -> parse_catfile tl
+      | "hash-object" -> parse_hash tl
+      | "commit" -> parse_commit tl 
+      | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

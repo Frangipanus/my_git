@@ -13,4 +13,5 @@ let exec_command (c : command) : unit =
        (if todir then Object_manager.hash_object_directory
         else  Object_manager.hash_object_stdout) in
      (h objtype file)
+  | Log -> git_log ()
   | _ -> print_string "pas implé"; exit 2
