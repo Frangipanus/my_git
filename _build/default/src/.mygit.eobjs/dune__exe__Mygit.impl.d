@@ -1,1 +1,1 @@
-src/mygit.ml: List Object_manager Printf
+src/mygit.ml: Object_manager
