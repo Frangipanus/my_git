@@ -2,6 +2,14 @@ open Unix
 
 
 (****************Fonctions utilitaires sur les texte et repo***********************************)
+let rec rmrf path = match Sys.is_directory path with
+  | true ->
+    Sys.readdir path |>
+    Array.iter (fun name -> rmrf (Filename.concat path name));
+    Unix.rmdir path
+  | false -> Sys.remove path
+
+  
 exception Not_A_Repo
 
 let decode_hex_string hex_string =
@@ -114,13 +122,13 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
         Printf.fprintf oc "%s" file;
         (* write something *)
         close_out oc;
-        compress_file (obj_path^"/_ILP") (path^"/"^(String.sub hashed 2 (String.length hashed -2))));
-        hashed
+        compress_file (obj_path^"/_ILP") (path^"/"^(String.sub hashed 2 (String.length hashed -2)));
+        hashed)
     else
-        (mkdir path 0o777;compress_file obj_path (path^"/"^(String.sub hashed 2 (String.length hashed -2))));
-        hashed
+        (mkdir path 0o777;compress_file obj_path (path^"/"^(String.sub hashed 2 (String.length hashed -2)));
+        hashed)
     with 
-        |Not_A_Repo ->Printf.printf "%s\n" "Path is not in a bite repo"
+        |Not_A_Repo ->failwith "%s\n" "Path is not in a bite repo"
         
 let cat_file types obj_ident = 
     let acc = decomp_obj (find_repo ".")  (obj_ident) in 
@@ -221,6 +229,7 @@ let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un 
 
 
 and treat_tree tree path  = (*tree est l'arbres*)
+    if not(Sys.file_exists path) then mkdir path (0x777);
     let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
     List.iter (fun x -> let lst = String.split_on_char (space.[0]) x in 
               let auto = List.hd lst in  
@@ -259,6 +268,6 @@ let rec bite_commit () =
 
 and treat_dir path = ()
 
-and treat_blob path = ()
-
+and treat_blob path = 
+()
     
