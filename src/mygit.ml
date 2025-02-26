@@ -5,5 +5,5 @@
 exception Not_A_Repo
 
 
-let com = "897888be1f9b1115c5e641ee0b9b02aadf9072d8"
+let com = "25cb3132aff375226c08a7a2ae0186c94b68b309"
 let () = Object_manager.checkout com

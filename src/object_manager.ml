@@ -325,7 +325,26 @@ let rec bite_commit message author commitor =
                     log := sha::(!log); sha
                      )
 
-and treat_dir path = "tarace"
+and treat_dir path = 
+    let acc = opendir path in 
+    let tree_ici = open_out (path^"/"^"_ILP_tree") in 
+    try while true do 
+        let file = readdir acc in 
+        Printf.printf "TREATING %s\n" file;
+        if ((String.equal file ".") || (String.equal file "..") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")) then () 
+        else ( Printf.printf "did pass\n";
+            let sah = (if Sys.is_directory (path^"/"^file)
+                         then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
+                         else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file) )
+            in Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah
+        )
+    done 
+    with 
+    |End_of_file -> (close_out tree_ici; let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in 
+                    let sah_tree = comp_obj path tree_txt ("tree"^space^(string_of_int (String.length tree_txt))^nul) in 
+                    unlink (path^"/"^"_ILP_tree");
+                    sah_tree
+                     )
 
 and treat_blob path = 
     let text = read_whole_file path in 
