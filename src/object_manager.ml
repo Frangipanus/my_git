@@ -139,7 +139,7 @@ let comp_obj (obj_path : string) (obj : string) (header : string) =(*obj_path es
         unlink (obj_path^"/_ILP");
         hashed)
     else
-        (mkdir path 0o777; let oc = open_out (obj_path^"/_ILP") in
+        (mkdir path 0o755; let oc = open_out (obj_path^"/_ILP") in
         (* create or truncate file, return channel *)
         Printf.fprintf oc "%s" file;
         (* write something *)
@@ -259,7 +259,7 @@ let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un 
 
 
 and treat_tree tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
-    if ((not(C_init.has_bite path))) then ( Printf.printf "no problem2\n";if Sys.file_exists path then rmrf path; mkdir path (0x777)) else ();
+    if ((not(C_init.has_bite path))) then ( Printf.printf "no problem2\n";if Sys.file_exists path then rmrf path; mkdir path (0o755)) else ();
     Printf.printf "tree is \n%s\n path is %s\n" tree path;
     let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
     
