@@ -1,4 +1,3 @@
-
 open Structure
 
 let exec_command (c : command) : unit =
@@ -13,5 +12,11 @@ let exec_command (c : command) : unit =
        (if todir then Object_manager.hash_object_directory
         else  Object_manager.hash_object_stdout) in
      (h objtype file)
-  | Log -> git_log ()
+  | Commit m ->
+     print_string
+       (Object_manager.bite_commit
+       m
+       "auteur non implémenté"
+       "commiteur non implémenté")
+  | Log -> Object_manager.git_log ()
   | _ -> print_string "pas implé"; exit 2

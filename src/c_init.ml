@@ -7,14 +7,15 @@ let c_init (path : string) : unit =
   chdir path; 
   if has_bite path then
     (Printf.eprintf "Echec: %s contient déja un dossier .bite" path; exit 1)
-  else 
+  else
+    let _ = openfile ".biteignore" [O_CREAT] 0o770 in 
     mkdir ".bite" 0o770;
     mkdir ".bite/objects" 0o770;
     mkdir ".bite/refs" 0o770;
     let _ = openfile ".bite/HEAD" [O_CREAT] 0o770 in
     let _ = openfile ".bite/config" [O_CREAT] 0o770 in
     let _ = openfile ".bite/description" [O_CREAT] 0o770 in
-    Printf.printf "Bite initialisé à %s" path
+    Printf.printf "bite initialisé à %s" path
 
 
 

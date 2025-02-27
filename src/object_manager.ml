@@ -178,71 +178,72 @@ and treat_blob blob path=
     Printf.fprintf oc "%s" blob; 
     close_out oc
 
-
 let checkout sha1 = 
     let bitepath = find_repo "." in 
     let acc = opendir bitepath in 
     try while true do 
         let fichier = readdir acc in 
-        if (not(Sys.is_directory fichier) && (not(String.equal fichier "mygit.exe"))) then (unlink (bitepath^"/"^fichier))
+        if Sys.is_directory fichier || String.equal fichier "mygit.exe" then
+          (unlink (bitepath^"/"^fichier))
         done
     with
-        |End_of_file -> (
-    let head, obj = read_object "." sha1 in 
-    let types, size = read_header head in
-
-    Printf.printf "Commencing checking of %s\n" sha1;
-    assert (String.equal types "commit");
-    let lst_assoc = parse_commit obj in 
-    List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ()) lst_assoc)
-
-let rec bite_commit (message : string) (author : string) (commitor : string) =
-    let path = find_repo "." in 
-    let acc = opendir path in 
-    let tree_ici = open_out (path^"/"^"_ILP_tree") in 
-    try while true do 
-        let file = readdir acc in 
-        Printf.printf "TREATING %s\n" file;
-        if not (ignore_file file path) then
-          (Printf.printf "did pass\n";
-           let sah = (if Sys.is_directory (path^"/"^file)
-                      then "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
-                      else "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
-           in Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah
-          )
-        done 
-    with 
     |End_of_file ->
-      (close_out tree_ici;
-       let path_ilptree = (path^"/"^"_ILP_tree") in 
-       let tree_txt = read_whole_file path_ilptree in
-       let path_stree =
-         ("tree"^space^(string_of_int (String.length tree_txt))^nul) in 
+      let head, obj = read_object "." sha1 in 
+      let types, size = read_header head in
+      Printf.printf "Commencing checking of %s\n" sha1;
+      assert (String.equal types "commit");
+      let lst_assoc = parse_commit obj in 
+      List.iter
+        (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ())
+        lst_assoc
+
+
+let rec bite_commit (message : string) (author : string) (commitor : string) =  
+  let path = find_repo "." in
+  let acc = opendir path in
+  let ilp_path = path^"/"^"_ILP_tree" in 
+  let tree_ici = open_out ilp_path in 
+  try while true do 
+        let file = readdir acc in 
+        if not (ignore_file file path) then
+          (Printf.printf "[*] commit de %s\n" file;
+           let epath = (path^"/"^file) in
+           let  treat_fun =
+             if Sys.is_directory epath then treat_dir else treat_blob in
+           let sah = "0000"^space^(treat_fun epath path)^nul^file in 
+           Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah)
+      done 
+  with 
+  | End_of_file ->
+     (close_out tree_ici; 
+      let tree_txt = read_whole_file ilp_path in
+      let path_stree =
+        ("tree"^space^(string_of_int (String.length tree_txt))^nul) in 
        let sah_tree = comp_obj path tree_txt  path_stree in 
-       unlink path_ilptree;
-       let commited = [|("tree", sah_tree); ("Author: ", author);
+       unlink ilp_path;
+       let commited = [|("tree", sah_tree);
+                        ("Author: ", author);
                         ("Commitor: ", commitor);
                         ("message", message)|] in 
        let text_commit = write_commit (Array.to_list commited) in 
        let sha = comp_obj
                    path
                    text_commit
-                   ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
-       log := sha::(!log); sha
-      )
-and treat_dir path = 
+                   "commit"^space^(string_of_int @@ String.length text_commit)^nul in 
+       log := sha::(!log); sha)
+and treat_dir (path : string) (repo_path : string) = 
   let acc = opendir path in
   let path_ilptree = (path^"/"^"_ILP_tree") in 
-  let tree_ici = open_out path_ilptree in 
+  let tree_ici = open_out path_ilptree in
   try while true do 
-        let file = readdir acc in 
-        Printf.printf "TREATING %s\n" file;
-        if not (ignore_file file path) then 
-          (Printf.printf "did pass\n";
-           let sah = (if Sys.is_directory (path^"/"^file)
-                      then "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
-                      else "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
-           in Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah
+        let file = readdir acc in        
+        if not (ignore_file file repo_path) then 
+          (Printf.printf "[+] commit de %s\n" path;
+           let epath = (path^"/"^file) in
+           let treat_fun =
+             if Sys.is_directory epath then treat_dir else treat_blob in
+           let sah = "0000"^space^(treat_fun epath path)^nul^file in 
+           Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah
           )
       done 
   with 
@@ -256,8 +257,7 @@ and treat_dir path =
          ("tree"^space^(string_of_int (String.length tree_txt))^nul) in 
      unlink path_ilptree;
      sah_tree)
-
-and treat_blob path = 
+and treat_blob (path : string) (_ : string) = 
     let text = read_whole_file path in 
     comp_obj
       (toutsaufledernier (String.split_on_char '/' path) "/")
@@ -266,8 +266,8 @@ and treat_blob path =
  
 let git_log () = 
     let rec aux lst = match lst with 
-      |[] -> ()
-      |(sha)::q ->
+      | [] -> ()
+      | (sha)::q ->
         (Printf.printf "commit %s\n" sha;
          print_shit (parse_commit (snd (read_object "." sha)));
          Printf.printf "\n"; aux q)

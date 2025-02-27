@@ -33,14 +33,14 @@ let parse_catfile (l : string list) : command =
 
 let parse_hash (l : string list) : command =
   let getstore (l : string list) : bool * (string list) =
-    (List.mem "-w", List.filter ((=) "-w") in     
+    (List.mem "-w" l, List.filter ((=) "-w") l) in     
   let get_type (l : string list) : string * (string list) =
-    let indt = List.find_index (fun x -> x = "-t") in
+    let indt = List.find_index (fun x -> x = "-t") l in
     (match indt with
      | None -> ("blob", l)
      | Some i ->         
         if (List.length l) - 1 <> i then
-          (List.nth l (i+1), List.filteri (fun j _ -> j <> i && j <> (i+1)))  
+          (List.nth l (i+1), List.filteri (fun j _ -> j <> i && j <> (i+1)) l)  
         else
           (print_w_help "-t : type d'objet non spécifié"; exit 1)) in
   let get_fname (l : string list) : string =
@@ -52,7 +52,7 @@ let parse_hash (l : string list) : command =
   let s, l = getstore l in
   let t, l = get_type l in
   let n = get_fname l in
-  (t, n, s)   
+  Hash (t, n, s)   
            
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
