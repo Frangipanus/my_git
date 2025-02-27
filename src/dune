@@ -1,7 +1,7 @@
 (executable
   (name mygit)
 
-  (libraries unix cryptokit digestif camlzip zlib hex)
+  (libraries unix cryptokit digestif camlzip zlib hex str)
 
   (promote (until-clean)) 
 )

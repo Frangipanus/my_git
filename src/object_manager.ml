@@ -1,5 +1,6 @@
 open Utils
 open Unix
+open Ignore
 
 (**************************Object managing**********************************)
 
@@ -193,16 +194,7 @@ let checkout sha1 =
     Printf.printf "Commencing checking of %s\n" sha1;
     assert (String.equal types "commit");
     let lst_assoc = parse_commit obj in 
-    
-    List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ()) lst_assoc
-        )
-
-
-
-(* Faire une fonction qui ramasse ce qu'on ignore ou non dans un .biteignore *)
-let to_ignore = ["."; ".."; ".bit"; "_ILP_tree"; "mygit.exe"] 
-
-let ignore_file (f : string) : bool = List.mem f to_ignore
+    List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ()) lst_assoc)
 
 let rec bite_commit (message : string) (author : string) (commitor : string) =
     let path = find_repo "." in 
@@ -211,7 +203,7 @@ let rec bite_commit (message : string) (author : string) (commitor : string) =
     try while true do 
         let file = readdir acc in 
         Printf.printf "TREATING %s\n" file;
-        if not (ignore_file file) then
+        if not (ignore_file file path) then
           (Printf.printf "did pass\n";
            let sah = (if Sys.is_directory (path^"/"^file)
                       then "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
@@ -245,7 +237,7 @@ and treat_dir path =
   try while true do 
         let file = readdir acc in 
         Printf.printf "TREATING %s\n" file;
-        if not (ignore_file file) then 
+        if not (ignore_file file path) then 
           (Printf.printf "did pass\n";
            let sah = (if Sys.is_directory (path^"/"^file)
                       then "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
@@ -272,7 +264,7 @@ and treat_blob path =
       text
       ("blob"^space^(string_of_int (String.length text))^nul)
  
-let git_log = 
+let git_log () = 
     let rec aux lst = match lst with 
       |[] -> ()
       |(sha)::q ->
