@@ -19,4 +19,5 @@ let exec_command (c : command) : unit =
        "auteur non implémenté"
        "commiteur non implémenté")
   | Log -> Object_manager.git_log ()
+  |Chekout(s) -> Object_manager.checkout s
   | _ -> print_string "pas implé"; exit 2

@@ -13,6 +13,7 @@ let c_init (path : string) : unit =
     mkdir ".bite/objects" 0o770;
     mkdir ".bite/refs" 0o770;
     let _ = openfile ".bite/HEAD" [O_CREAT] 0o770 in
+    let _ = openfile ".bite/branches" [O_CREAT] 0o770 in
     let _ = openfile ".bite/config" [O_CREAT] 0o770 in
     let _ = openfile ".bite/description" [O_CREAT] 0o770 in
     Printf.printf "bite initialisé à %s" path

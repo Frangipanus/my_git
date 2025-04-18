@@ -53,7 +53,11 @@ let parse_hash (l : string list) : command =
   let t, l = get_type l in
   let n = get_fname l in
   Hash (t, n, s)   
-           
+          
+let parse_checkout tl = 
+  let sah = List.hd tl in 
+  Chekout(sah)
+
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
   match args_as_l with
@@ -65,6 +69,7 @@ let parse_bite () : command =
       | "cat-file" -> parse_catfile tl
       | "hash-object" -> parse_hash tl
       | "commit" -> parse_commit tl 
+      |"checkout" -> parse_checkout tl
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

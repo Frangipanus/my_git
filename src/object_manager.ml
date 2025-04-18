@@ -136,6 +136,7 @@ let read_header (head : string) : string*string = (*Head n'a pas le null a la fi
     let lst1 = String.split_on_char (space.[0]) head in 
     let types = List.hd lst1 in 
     let size = toutsauflepremier lst1 nul in 
+    Printf.printf "%s" types;
     (types, size)
 
 let rec treat_obj (path : string) (sha : string) : unit =
@@ -183,18 +184,16 @@ let checkout sha1 =
     let acc = opendir bitepath in 
     try while true do 
         let fichier = readdir acc in 
-        if Sys.is_directory fichier || String.equal fichier "mygit.exe" then
-          (unlink (bitepath^"/"^fichier))
+        if (not(Sys.is_directory fichier) && (not(String.equal fichier "mygit.exe"))) then (unlink (bitepath^"/"^fichier))
         done
     with
     |End_of_file ->
       let head, obj = read_object "." sha1 in 
       let types, size = read_header head in
       Printf.printf "Commencing checking of %s\n" sha1;
-      assert (String.equal types "commit");
       let lst_assoc = parse_commit obj in 
       List.iter
-        (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ())
+        (fun (a,b) -> if (String.equal a "tree") then (Printf.printf "here";treat_obj "." b) else (Printf.printf "here %s" a ))
         lst_assoc
 
 
@@ -230,7 +229,7 @@ let rec bite_commit (message : string) (author : string) (commitor : string) =
                    path
                    text_commit
                    "commit"^space^(string_of_int @@ String.length text_commit)^nul in 
-       log := sha::(!log); sha)
+       log := sha::(!log); let head = open_out (path^"/.bite/HEAD") in Printf.fprintf head "%s" sha; sha)
 and treat_dir (path : string) (repo_path : string) = 
   let acc = opendir path in
   let path_ilptree = (path^"/"^"_ILP_tree") in 

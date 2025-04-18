@@ -15,6 +15,5 @@
 
 open Parse
 open Exec_command
-
 let com = parse_bite ()
 let () = exec_command com

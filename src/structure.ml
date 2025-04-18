@@ -11,3 +11,4 @@ type command =
   | Hash of string * string * bool (* type, fichier, true si on stocke dans le repo, false sinon *) 
   | Commit of string
   | Log 
+  |Chekout of string
