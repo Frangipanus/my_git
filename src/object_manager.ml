@@ -325,7 +325,7 @@ let rec bite_commit message author commitor =
                     let commited = [|("tree", sah_tree); ("Author: ", author); ("Commitor: ", commitor); ("message", message)|] in 
                     let text_commit = write_commit (Array.to_list commited) in 
                     let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
-                    log := sha::(!log); sha
+                    log := sha::(!log); let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;sha
                      )
 
 and treat_dir path = 
