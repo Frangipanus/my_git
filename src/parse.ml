@@ -70,6 +70,7 @@ let parse_bite () : command =
       | "hash-object" -> parse_hash tl
       | "commit" -> parse_commit tl 
       |"checkout" -> parse_checkout tl
+      | "branch_list" -> Branch_list
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

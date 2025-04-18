@@ -101,7 +101,6 @@ let decompress_file source dest =
     in aux lst ""
 
 (**************************Object managing**********************************)
-let log = ref [] (*Commit History.*)
 
 (*prend le sha et le bite_path et revoie un objet en string avec le header
 Raise Not_An_Object si l'objet avec ce sha n'existe pas*)
@@ -325,7 +324,7 @@ let rec bite_commit message author commitor =
                     let commited = [|("tree", sah_tree); ("Author: ", author); ("Commitor: ", commitor); ("message", message)|] in 
                     let text_commit = write_commit (Array.to_list commited) in 
                     let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
-                    log := sha::(!log); let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;sha
+                    let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;sha
                      )
 
 and treat_dir path = 
@@ -353,6 +352,33 @@ and treat_blob path =
     let text = read_whole_file path in 
     comp_obj (toutsaufledernier (String.split_on_char '/' path) "/") text ("blob"^space^(string_of_int (String.length text))^nul)
     
- 
+
+let branch_list path = 
+  let bitepath = find_repo path in 
+  let acc = opendir (bitepath^"/.bite/branches") in 
+  try while true do 
+    let fichier = readdir acc in 
+    if (not(String.equal "." fichier) && not(String.equal ".." fichier)) then 
+    Printf.printf "%s\n" fichier
+  done 
+  with
+  |End_of_file -> () 
+
+let get_branch_list path = 
+  let bitepath = find_repo path in 
+  let acc = opendir (bitepath^"/.bite/branches") in 
+  let rec aux dir res = 
+    try let fichier = readdir acc in 
+    if (not(String.equal "." fichier) && not(String.equal ".." fichier)) then 
+      aux dir (fichier::res)
+  else
+    aux dir res
+    with 
+    |End_of_file -> res 
+  in 
+  aux acc []
+
+
+
 let git_log ()= 
     ()

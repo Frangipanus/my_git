@@ -12,3 +12,4 @@ type command =
   | Commit of string
   | Log 
   |Chekout of string
+  |Branch_list
