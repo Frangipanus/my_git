@@ -19,6 +19,7 @@ let c_init (path : string) : unit =
     let _ = openfile ".bite/description" [O_CREAT] 0o770 in
     let _ = openfile ".bite/branch" [O_CREAT] 0o770 in
     let _ = openfile ".bite/branches/main/HEAD" [O_CREAT] 0o770 in
+    let _ = openfile ".bite/branches/main/list" [O_CREAT] 0o770 in
     let oc = open_out ".bite/branch" in 
     Printf.fprintf oc "main"; 
     Printf.printf "bite initialisé à %s" path
