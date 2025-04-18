@@ -378,7 +378,13 @@ let get_branch_list path =
   in 
   aux acc []
 
-
+let get_branch ()= 
+  let bitepath = find_repo "." in
+  let branch = read_whole_file (bitepath^"/.bite/branch") in 
+  branch
 
 let git_log ()= 
-    ()
+    let branch = get_branch () in
+    let path = find_repo "." in  
+    let commits = read_lines (path^"/.bite/branches/"^branch) in 
+    List.iter (fun x -> Printf.printf "%s\n" x) commits (*Decider de comment on stocke les commits*)
