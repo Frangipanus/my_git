@@ -207,6 +207,12 @@ let parse_commit (commit : string) : (string*string) list=  (*On prend en entré
     let message_vrai = toutsauflepremier (("ratio")::(message)) "" in 
     List.tl(key_value@["message", message_vrai])
 
+
+let get_branch ()= 
+    let bitepath = find_repo "." in
+    let branch = read_whole_file (bitepath^"/.bite/branch") in 
+    branch
+
 let write_commit commit = 
     let rec aux lst acc = 
         match lst with 
@@ -324,7 +330,15 @@ let rec bite_commit message author commitor =
                     let commited = [|("tree", sah_tree); ("Author: ", author); ("Commitor: ", commitor); ("message", message)|] in 
                     let text_commit = write_commit (Array.to_list commited) in 
                     let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
-                    let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;sha
+                    let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;
+                    let branch_cur = get_branch () in 
+                    let oc2 = open_out (path^"/.bite/branches/"^branch_cur^"/HEAD") in 
+                    Printf.fprintf oc2 "%s" sha;
+                    let str_acc = read_whole_file (path^"/.bite/branches/"^branch_cur^"/list") in 
+                    let to_print = (if (String.length str_acc) >0 then sha^"\n"^message^"\n"^str_acc else sha^"\n"^message  )in 
+                    let oc = open_out (path^"/.bite/branches/"^branch_cur^"/list") in 
+                    Printf.fprintf oc "%s" to_print;
+                    sha
                      )
 
 and treat_dir path = 
@@ -378,10 +392,6 @@ let get_branch_list path =
   in 
   aux acc []
 
-let get_branch ()= 
-  let bitepath = find_repo "." in
-  let branch = read_whole_file (bitepath^"/.bite/branch") in 
-  branch
 
 let git_log ()= 
     let branch = get_branch () in
@@ -394,8 +404,8 @@ let branch_create name =
   if (List.mem name lst) then (Printf.printf "%s is already a branch.\n" name)
   else (
     mkdir (".bite/branches/"^name) 0o770;
-    let _ = openfile ".bite/branches/main/HEAD" [O_CREAT] 0o770 in
-    let _ = openfile ".bite/branches/main/list" [O_CREAT] 0o770 in 
+    let _ = openfile (".bite/branches/"^name^"/HEAD") [O_CREAT] 0o770 in
+    let _ = openfile (".bite/branches/"^name^"/list") [O_CREAT] 0o770 in 
     Printf.printf "Branch %s was succesfully created.\n" name    
   )
 
