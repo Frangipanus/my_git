@@ -96,7 +96,7 @@ let decompress_file source dest =
             |[] -> res 
             |h::q::[] ->res^h
             |h::t::q -> aux (t::q) (res^h^sep)
-            |_ -> failwith "ta mere"
+            |_ -> failwith "Big problem"
             
     in aux lst ""
 
