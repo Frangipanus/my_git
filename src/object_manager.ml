@@ -292,6 +292,9 @@ let get_last_commit () =
 
 let checkout sha1 = 
     let bitepath = find_repo "." in 
+    let branch_ici = get_branch () in 
+    let commited = commit_list branch_ici in 
+    if (not (List.mem sha1 commited)) then (Printf.printf "Commit does not exist. You might be in the wrong branch.\n"; exit(0));
     let acc = opendir bitepath in 
     try while true do 
         let fichier = readdir acc in
