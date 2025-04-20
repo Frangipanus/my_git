@@ -411,15 +411,6 @@ let git_log ()=
     in 
     aux commits 
 
-let branch_create name = 
-  let lst = get_branch_list "." in
-  if (List.mem name lst) then (Printf.printf "%s is already a branch.\n" name)
-  else (
-    mkdir (".bite/branches/"^name) 0o770;
-    let _ = openfile (".bite/branches/"^name^"/HEAD") [O_CREAT] 0o770 in
-    let _ = openfile (".bite/branches/"^name^"/list") [O_CREAT] 0o770 in 
-    Printf.printf "Branch %s was succesfully created.\n" name    
-  )
 
 let branch_checkout name = 
   let lst = get_branch_list "." in
@@ -431,7 +422,22 @@ let branch_checkout name =
   )
   else
     (Printf.printf "Branch %s does not exist. You can create it with command branch_create.\n" name)
+    
+    
 
+let branch_create name = 
+  let lst = get_branch_list "." in
+  if (List.mem name lst) then (Printf.printf "%s is already a branch.\n" name)
+  else (
+    mkdir (".bite/branches/"^name) 0o770;
+    let _ = openfile (".bite/branches/"^name^"/HEAD") [O_CREAT] 0o770 in
+    let _ = openfile (".bite/branches/"^name^"/list") [O_CREAT] 0o770 in 
+    let acc= get_branch () in 
+    branch_checkout name;
+    let _ = bite_commit ("Branch "^name^" was created.") "self" "self" in 
+    branch_checkout acc;
+      Printf.printf "Branch %s was succesfully created.\n" name    
+  )
 
 
 exception Impossible_Merge
