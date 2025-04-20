@@ -341,7 +341,7 @@ let rec bite_commit message author commitor =
                     let str_acc = read_whole_file (path^"/.bite/branches/"^branch_cur^"/list") in 
                     let to_print = (if (String.length str_acc) >0 then sha^"\n"^message^"\n"^str_acc else sha^"\n"^message  )in 
                     let oc = open_out (path^"/.bite/branches/"^branch_cur^"/list") in 
-                    Printf.fprintf oc "%s" to_print;
+                    Printf.fprintf oc "Succes. Commit has sah: %s\n" to_print;
                     sha
                      )
 
