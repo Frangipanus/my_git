@@ -269,7 +269,7 @@ let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un 
 
 
 and treat_tree tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
-    if ((not(C_init.has_bite path))) then ( Printf.printf "no problem2\n";if Sys.file_exists path then rmrf path; mkdir path (0o755)) else ();
+    if ((not(C_init.has_bite path))) then ( if Sys.file_exists path then rmrf path; mkdir path (0o755)) else ();
     let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
     
     List.iter (fun x -> if String.length x = 0 then () else (
@@ -299,7 +299,7 @@ let checkout sha1 =
     try while true do 
         let fichier = readdir acc in
         if (not(Sys.is_directory fichier) && (not(String.equal fichier "mygit.exe")) && (not(String.equal ".biteignore" fichier))) then (let accu = bitepath^"/"^fichier in unlink accu) else(
-        if (Sys.is_directory fichier) && (not(String.equal ".biteignore" fichier)) && (not(String.equal ".bite" fichier)) &&(not(String.equal "." fichier) && (not(String.equal ".." fichier))) then ( Printf.printf "removed\n";rmrf (bitepath^"/"^fichier)))
+        if (Sys.is_directory fichier) && (not(String.equal ".biteignore" fichier)) && (not(String.equal ".bite" fichier)) &&(not(String.equal "." fichier) && (not(String.equal ".." fichier))) then (rmrf (bitepath^"/"^fichier)))
         done
     with
         |End_of_file -> (
@@ -335,9 +335,8 @@ let rec bite_commit message author commitor =
                     let text_commit = write_commit (Array.to_list commited) in 
                     let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
                     let branch = get_branch () in 
-                    Printf.printf "curr branch = %s\n" branch;
                     let already = commit_list branch in 
-                    if (List.mem sha already) && (String.equal sha (get_last_commit ()) ) then (Printf.printf "Deja a jour.\n"; exit(0));
+                    if (List.mem sha already) && (String.equal sha (get_last_commit ()) ) then (Printf.printf "Already up to date.\n"; exit(0));
                     let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha; close_out oc;
                     let branch_cur = get_branch () in 
                     let oc2 = open_out (path^"/.bite/branches/"^branch_cur^"/HEAD") in 
@@ -506,7 +505,7 @@ let merge branch =
   let commit_branch1 = read_whole_file (bitepath^"/.bite/branches/"^branch_cur^"/HEAD") in
   let commit_branch2 = read_whole_file (bitepath^"/.bite/branches/"^branch^"/HEAD") in
   checkout commit_branch1;
-  try checkout_merge commit_branch2; branch_checkout branch;Printf.printf "here?\n"; let acc =  bite_commit ("Merged branch "^branch_cur^" and "^branch^".") "self" "self" in ()
+  try checkout_merge commit_branch2; branch_checkout branch; let acc =  bite_commit ("Merged branch "^branch_cur^" and "^branch^".") "self" "self" in ()
   with 
     |Impossible_Merge -> (Printf.printf "Impossible to merge branch %s and %s: conflit dected. Reversed to commit: %s\n." branch branch_cur commit_branch1; checkout commit_branch1)
 
