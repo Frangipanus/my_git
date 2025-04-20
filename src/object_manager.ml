@@ -212,7 +212,15 @@ let get_branch ()=
     let bitepath = find_repo "." in
     let branch = read_whole_file (bitepath^"/.bite/branch") in 
     branch
-
+let commit_list branch =
+  let bitepath = find_repo "." in 
+  let commits = read_lines (bitepath^"/.bite/branches/"^branch^"/list") in 
+  let rec aux lst res = 
+    match lst with
+    |[] -> res 
+    |h1::h2::t -> aux t (h1::res)
+  in 
+  aux commits []
 let write_commit commit = 
     let rec aux lst acc = 
         match lst with 
@@ -283,11 +291,13 @@ and treat_blob blob path=
     Printf.fprintf oc "%s" blob; 
     close_out oc
 
+let get_last_commit () = 
+  let bitepath = find_repo "." in 
+  read_whole_file (bitepath^"/.bite/HEAD")
 
 let checkout sha1 = 
     let bitepath = find_repo "." in 
     let acc = opendir bitepath in 
-    Printf.printf "bite is %s et %s\n" bitepath (bitepath^"/");
     try while true do 
         let fichier = readdir acc in
         Printf.printf "%s\n" fichier;
@@ -296,7 +306,6 @@ let checkout sha1 =
         done
     with
         |End_of_file -> (
-          Printf.printf "heil \n";
     let head, obj = read_object "." sha1 in 
     let types, size = read_header head in
 
@@ -330,6 +339,9 @@ let rec bite_commit message author commitor =
                     let commited = [|("tree", sah_tree); ("Author: ", author); ("Commitor: ", commitor); ("message", message)|] in 
                     let text_commit = write_commit (Array.to_list commited) in 
                     let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
+                    let branch = get_branch () in 
+                    let already = commit_list branch in 
+                    if (List.mem sha already) && (String.equal sha (get_last_commit ()) ) then (Printf.printf "Deja a jour.\n"; exit(0));
                     let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;
                     let branch_cur = get_branch () in 
                     let oc2 = open_out (path^"/.bite/branches/"^branch_cur^"/HEAD") in 
@@ -424,3 +436,6 @@ let branch_checkout name =
   )
   else
     (Printf.printf "Branch %s does not exist. You can create it with command branch_create.\n" name)
+
+
+
