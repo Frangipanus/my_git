@@ -431,7 +431,60 @@ let branch_checkout name =
 
 
 
+exception Impossible_Merge
 
+let rec treat_obj2 path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un file ou un dossier*)
+    if (Sys.file_exists path && Sys.is_directory path) then (
+            let head, obj = read_object path sha in 
+            let types, size = read_header head in
+            match types with 
+            |"blob" -> failwith "blob is not a directory"
+            |"tree" -> treat_tree2 obj path 
+            |_ -> failwith "not yet")
+    else
+        (
+        let lst = String.split_on_char '/' path in 
+        let head, obj = read_object (toutsaufledernier lst "/") sha in 
+        let types, size = read_header head in
+        match types with 
+          | "blob" -> treat_blob2 obj path
+          | "tree" -> treat_tree2 obj path 
+          |_ -> failwith "not yet"
+        )
+
+
+and treat_tree2 tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
+    if ((not(C_init.has_bite path))) then (if Sys.file_exists path then () else  mkdir path (0o755)) else ();
+    let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
+    
+    List.iter (fun x -> if String.length x = 0 then () else (
+                let lst = String.split_on_char (space.[0]) x in 
+              let auto = List.hd lst in  
+              let acc = toutsauflepremier lst space in 
+              let lst2 = String.split_on_char (nul.[0]) acc in 
+              let sha = List.hd lst2 in 
+              let path2 = path^"/"^(toutsauflepremier lst2 nul) in 
+              treat_obj2 path2 sha)) content
+
+and treat_blob2 blob path= 
+    if (Sys.file_exists path) then (raise Impossible_Merge) ;
+    let oc = open_out path in 
+    Printf.fprintf oc "%s" blob; 
+    close_out oc
+
+let checkout_merge sha1 = 
+  let bitepath = find_repo "." in 
+  let acc = opendir bitepath in 
+  let head, obj = read_object "." sha1 in 
+  let types, size = read_header head in
+  assert (String.equal types "commit");
+  let lst_assoc = parse_commit obj in 
+  List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj2 "." b else ()) lst_assoc
+      
+  
+
+
+    
 let merge branch = 
   let bitepath = find_repo "." in 
   let branch_cur = get_branch () in 
@@ -440,7 +493,10 @@ let merge branch =
   if not(List.mem branch branches) then (Printf.printf "Branch %s does not exist" branch; exit(0));
   let commit_branch1 = read_whole_file (bitepath^"/.bite/branches/"^branch_cur^"/HEAD") in
   let commit_branch2 = read_whole_file (bitepath^"/.bite/branches/"^branch^"/HEAD") in
-  checkout commit_branch1
+  checkout commit_branch1;
+  try checkout_merge commit_branch2 
+  with 
+    |Impossible_Merge -> (Printf.printf "Impossible to merge branch %s and %s: conflit dected. Reversed to commit: %s\n." branch branch_cur commit_branch1; checkout commit_branch1)
 
 
 
