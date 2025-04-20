@@ -396,8 +396,13 @@ let get_branch_list path =
 let git_log ()= 
     let branch = get_branch () in
     let path = find_repo "." in  
-    let commits = read_lines (path^"/.bite/branches/"^branch) in 
-    List.iter (fun x -> Printf.printf "%s\n" x) commits (*Decider de comment on stocke les commits*)
+    let commits = read_lines (path^"/.bite/branches/"^branch^"/list") in 
+    let rec aux lst = 
+      match lst with 
+      |[] -> ()
+      |h1::h2::t -> (Printf.printf "Commit hash: %s\nCommit message:\n %s \n" h1 h2; aux t)
+    in 
+    aux commits 
 
 let branch_create name = 
   let lst = get_branch_list "." in
