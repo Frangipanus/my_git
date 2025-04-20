@@ -24,4 +24,5 @@ let exec_command (c : command) : unit =
   |Branch_checkout(s) -> Object_manager.branch_checkout s 
   |Branch_create(s) -> Object_manager.branch_create s
   |Merge(s) -> Object_manager.merge s
+  |Remove(s) -> Object_manager.delete_branch s
   | _ -> print_string "pas implé"; exit 2

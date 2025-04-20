@@ -18,7 +18,6 @@ let parse_init (l : string list) : command =
 (*Implémenter des regexp ici*)
 let parse_add (l : string list) : command = Add l
 
-let parse_remove (l : string list) : command = Remove l
 
 let parse_commit (l : string list) : command =
   match l with
@@ -82,6 +81,7 @@ let parse_bite () : command =
       | "branch_create" -> parse_branch_create tl
       | "branch_checkout" -> parse_branch_checkout tl 
       | "merge" -> parse_merge tl
+      | "remove" -> Remove(List.hd tl)
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

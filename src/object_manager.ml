@@ -511,5 +511,11 @@ let merge branch =
     |Impossible_Merge -> (Printf.printf "Impossible to merge branch %s and %s: conflit dected. Reversed to commit: %s\n." branch branch_cur commit_branch1; checkout commit_branch1)
 
 
-
-
+let delete_branch name = 
+    let bitepath = find_repo "." in 
+    let lst = get_branch_list "." in 
+    let branch = get_branch () in 
+    if (String.equal branch name) then (Printf.printf "Cannot remove the branch you are on.\n"; exit(0));
+    if (not(List.mem name lst)) then (Printf.printf "Branch %s does not exist.\n" name; exit(0))
+    else 
+      (rmrf (bitepath^"/.bite/branches/"^name))
