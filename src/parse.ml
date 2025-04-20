@@ -57,6 +57,12 @@ let parse_hash (l : string list) : command =
 let parse_checkout tl = 
   let sah = List.hd tl in 
   Chekout(sah)
+let parse_branch_create tl = 
+  let acc = List.hd tl in 
+  Branch_create(acc)
+let parse_branch_checkout tl = 
+  let acc = List.hd tl in 
+  Branch_checkout(acc)
 
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
@@ -71,6 +77,8 @@ let parse_bite () : command =
       | "commit" -> parse_commit tl 
       |"checkout" -> parse_checkout tl
       | "branch_list" -> Branch_list
+      | "branch_create" -> parse_branch_create tl
+      | "branch_checkout" -> parse_branch_checkout tl 
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

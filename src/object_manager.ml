@@ -388,3 +388,24 @@ let git_log ()=
     let path = find_repo "." in  
     let commits = read_lines (path^"/.bite/branches/"^branch) in 
     List.iter (fun x -> Printf.printf "%s\n" x) commits (*Decider de comment on stocke les commits*)
+
+let branch_create name = 
+  let lst = get_branch_list "." in
+  if (List.mem name lst) then (Printf.printf "%s is already a branch.\n" name)
+  else (
+    mkdir (".bite/branches/"^name) 0o770;
+    let _ = openfile ".bite/branches/main/HEAD" [O_CREAT] 0o770 in
+    let _ = openfile ".bite/branches/main/list" [O_CREAT] 0o770 in 
+    Printf.printf "Branch %s was succesfully created.\n" name    
+  )
+
+let branch_checkout name = 
+  let lst = get_branch_list "." in
+  let bitepath = find_repo "." in  
+  if (List.mem name lst) then (
+    let oc = open_out (bitepath^"/.bite/branch") in 
+    Printf.fprintf  oc "%s" name;
+    Printf.printf "Switched to branch %s.\n" name
+  )
+  else
+    (Printf.printf "Branch %s does not exist. You can create it with command branch_create.\n" name)

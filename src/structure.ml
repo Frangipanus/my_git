@@ -13,3 +13,5 @@ type command =
   | Log 
   |Chekout of string
   |Branch_list
+  | Branch_create of string 
+  |Branch_checkout of string

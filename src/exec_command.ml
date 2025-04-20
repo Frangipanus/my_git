@@ -21,4 +21,6 @@ let exec_command (c : command) : unit =
   | Log -> Object_manager.git_log ()
   |Chekout(s) -> Object_manager.checkout s
   |Branch_list -> Object_manager.branch_list "."
+  |Branch_checkout(s) -> Object_manager.branch_checkout s 
+  |Branch_create(s) -> Object_manager.branch_create s
   | _ -> print_string "pas implé"; exit 2
