@@ -316,7 +316,7 @@ let rec bite_commit message author commitor =
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
         let file = readdir acc in 
-        if ((String.equal file ".") || (String.equal file "..") ||(String.equal file ".bite") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")) then () 
+        if ((String.equal file ".") || (String.equal file "..") ||(String.equal file ".bite") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")||(String.equal file ".biteignore")) then () 
         else ( 
             let sah = (if Sys.is_directory (path^"/"^file)
                          then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
@@ -467,7 +467,7 @@ and treat_tree2 tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
               treat_obj2 path2 sha)) content
 
 and treat_blob2 blob path= 
-    if (Sys.file_exists path) then (raise Impossible_Merge) ;
+    if (Sys.file_exists path) then (Printf.printf "%s\n" path; raise Impossible_Merge) ;
     let oc = open_out path in 
     Printf.fprintf oc "%s" blob; 
     close_out oc

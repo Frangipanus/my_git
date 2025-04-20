@@ -63,7 +63,9 @@ let parse_branch_create tl =
 let parse_branch_checkout tl = 
   let acc = List.hd tl in 
   Branch_checkout(acc)
-
+let parse_merge tl = 
+    let acc = List.hd tl in 
+    Merge(acc)
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
   match args_as_l with
@@ -79,6 +81,7 @@ let parse_bite () : command =
       | "branch_list" -> Branch_list
       | "branch_create" -> parse_branch_create tl
       | "branch_checkout" -> parse_branch_checkout tl 
+      | "merge" -> parse_merge tl
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

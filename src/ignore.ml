@@ -4,7 +4,7 @@ open Str
 let base_to_ignore = List.map regexp_string ["."; ".."; ".bit"; "_ILP_tree"; "mygit.exe"] 
 
 let bite_to_ignore (path : string) : regexp list =
-  (List.map regexp) (Utils.read_lines (path^"/.biteignore"))
+  (List.map regexp) (Utils.read_lines (path^"/.bite/.biteignore"))
 
 let to_ignore (path : string) : regexp list =
   base_to_ignore @ (bite_to_ignore path)

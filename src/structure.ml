@@ -15,3 +15,4 @@ type command =
   |Branch_list
   | Branch_create of string 
   |Branch_checkout of string
+  |Merge of string
