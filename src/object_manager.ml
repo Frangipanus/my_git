@@ -252,7 +252,6 @@ let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un 
     if (Sys.file_exists path && Sys.is_directory path) then (
             let head, obj = read_object path sha in 
             let types, size = read_header head in
-            Printf.printf "type = %s\n" types;
             match types with 
             |"blob" -> failwith "blob is not a directoru"
             |"tree" -> treat_tree obj path 
@@ -270,9 +269,7 @@ let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un 
 
 
 and treat_tree tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
-Printf.printf "tree is commencing";
     if ((not(C_init.has_bite path))) then ( Printf.printf "no problem2\n";if Sys.file_exists path then rmrf path; mkdir path (0o755)) else ();
-    Printf.printf "tree is \n%s\n path is %s\n" tree path;
     let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
     
     List.iter (fun x -> if String.length x = 0 then () else (
@@ -281,12 +278,10 @@ Printf.printf "tree is commencing";
               let acc = toutsauflepremier lst space in 
               let lst2 = String.split_on_char (nul.[0]) acc in 
               let sha = List.hd lst2 in 
-              Printf.printf "supposed sha = %s path  = %s \n " sha (toutsauflepremier lst2 nul) ;
               let path2 = path^"/"^(toutsauflepremier lst2 nul) in 
               treat_obj path2 sha)) content
 
 and treat_blob blob path= 
-    Printf.printf "here wtf???%s\n" path;
     let oc = open_out path in 
     Printf.fprintf oc "%s" blob; 
     close_out oc
@@ -300,8 +295,7 @@ let checkout sha1 =
     let acc = opendir bitepath in 
     try while true do 
         let fichier = readdir acc in
-        Printf.printf "%s\n" fichier;
-        if (not(Sys.is_directory fichier) && (not(String.equal fichier "mygit.exe")) && (not(String.equal ".biteignore" fichier))) then (Printf.printf "remove 2\n";let accu = bitepath^"/"^fichier in Printf.printf "path is %s %s\n" bitepath accu ;unlink accu) else(
+        if (not(Sys.is_directory fichier) && (not(String.equal fichier "mygit.exe")) && (not(String.equal ".biteignore" fichier))) then (let accu = bitepath^"/"^fichier in unlink accu) else(
         if (Sys.is_directory fichier) && (not(String.equal ".biteignore" fichier)) && (not(String.equal ".bite" fichier)) &&(not(String.equal "." fichier) && (not(String.equal ".." fichier))) then ( Printf.printf "removed\n";rmrf (bitepath^"/"^fichier)))
         done
     with
@@ -309,7 +303,6 @@ let checkout sha1 =
     let head, obj = read_object "." sha1 in 
     let types, size = read_header head in
 
-    Printf.printf "Commencing checking of %s\n" sha1;
     assert (String.equal types "commit");
     let lst_assoc = parse_commit obj in 
     
@@ -323,13 +316,12 @@ let rec bite_commit message author commitor =
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
         let file = readdir acc in 
-        Printf.printf "TREATING %s\n" file;
         if ((String.equal file ".") || (String.equal file "..") ||(String.equal file ".bite") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")) then () 
-        else ( Printf.printf "did pass\n";
+        else ( 
             let sah = (if Sys.is_directory (path^"/"^file)
                          then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
                          else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file) )
-            in Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah
+            in Printf.fprintf tree_ici "%s\n" sah; 
         )
     done 
     with 
@@ -358,13 +350,12 @@ and treat_dir path =
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
         let file = readdir acc in 
-        Printf.printf "TREATING %s\n" file;
         if ((String.equal file ".") || (String.equal file "..") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")) then () 
-        else ( Printf.printf "did pass\n";
+        else ( 
             let sah = (if Sys.is_directory (path^"/"^file)
                          then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
                          else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file) )
-            in Printf.fprintf tree_ici "%s\n" sah; Printf.printf "sah = %s\n" sah
+            in Printf.fprintf tree_ici "%s\n" sah; 
         )
     done 
     with 
