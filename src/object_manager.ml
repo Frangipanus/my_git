@@ -341,7 +341,8 @@ let rec bite_commit message author commitor =
                     let str_acc = read_whole_file (path^"/.bite/branches/"^branch_cur^"/list") in 
                     let to_print = (if (String.length str_acc) >0 then sha^"\n"^message^"\n"^str_acc else sha^"\n"^message  )in 
                     let oc = open_out (path^"/.bite/branches/"^branch_cur^"/list") in 
-                    Printf.fprintf oc "Succes. Commit has sah: %s\n" to_print;
+                    Printf.fprintf oc "%s" to_print;
+                    Printf.printf "Commit was a sucess.\n";
                     sha
                      )
 
@@ -427,6 +428,20 @@ let branch_checkout name =
   )
   else
     (Printf.printf "Branch %s does not exist. You can create it with command branch_create.\n" name)
+
+
+
+
+let merge branch = 
+  let bitepath = find_repo "." in 
+  let branch_cur = get_branch () in 
+  if (String.equal branch_cur branch ) then (Printf.printf "Can't merge with self\n"; exit(0));
+  let branches = get_branch_list "." in 
+  if not(List.mem branch branches) then (Printf.printf "Branch %s does not exist" branch; exit(0));
+  let commit_branch1 = read_whole_file (bitepath^"/.bite/branches/"^branch_cur^"/HEAD") in
+  let commit_branch2 = read_whole_file (bitepath^"/.bite/branches/"^branch^"/HEAD") in
+  checkout commit_branch1
+
 
 
 
