@@ -332,16 +332,17 @@ let rec bite_commit message author commitor =
                     let text_commit = write_commit (Array.to_list commited) in 
                     let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
                     let branch = get_branch () in 
+                    Printf.printf "curr branch = %s\n" branch;
                     let already = commit_list branch in 
                     if (List.mem sha already) && (String.equal sha (get_last_commit ()) ) then (Printf.printf "Deja a jour.\n"; exit(0));
-                    let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha;
+                    let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha; close_out oc;
                     let branch_cur = get_branch () in 
                     let oc2 = open_out (path^"/.bite/branches/"^branch_cur^"/HEAD") in 
-                    Printf.fprintf oc2 "%s" sha;
+                    Printf.fprintf oc2 "%s" sha; close_out oc2;
                     let str_acc = read_whole_file (path^"/.bite/branches/"^branch_cur^"/list") in 
                     let to_print = (if (String.length str_acc) >0 then sha^"\n"^message^"\n"^str_acc else sha^"\n"^message  )in 
                     let oc = open_out (path^"/.bite/branches/"^branch_cur^"/list") in 
-                    Printf.fprintf oc "%s" to_print;
+                    Printf.fprintf oc "%s" to_print; close_out oc;
                     Printf.printf "Commit was a sucess.\n";
                     sha
                      )
@@ -373,11 +374,13 @@ and treat_blob path =
 
 let branch_list path = 
   let bitepath = find_repo path in 
+  let branch_cur = get_branch () in 
   let acc = opendir (bitepath^"/.bite/branches") in 
   try while true do 
     let fichier = readdir acc in 
-    if (not(String.equal "." fichier) && not(String.equal ".." fichier)) then 
-    Printf.printf "%s\n" fichier
+    if (not(String.equal "." fichier) && not(String.equal ".." fichier)) then (
+      if (String.equal fichier branch_cur) then Printf.printf ("*");
+    Printf.printf "%s\n" fichier)
   done 
   with
   |End_of_file -> () 
@@ -423,7 +426,7 @@ let branch_checkout name =
   let bitepath = find_repo "." in  
   if (List.mem name lst) then (
     let oc = open_out (bitepath^"/.bite/branch") in 
-    Printf.fprintf  oc "%s" name;
+    Printf.fprintf  oc "%s" name; close_out oc;
     Printf.printf "Switched to branch %s.\n" name
   )
   else
@@ -467,7 +470,7 @@ and treat_tree2 tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
               treat_obj2 path2 sha)) content
 
 and treat_blob2 blob path= 
-    if (Sys.file_exists path) then (Printf.printf "%s\n" path; raise Impossible_Merge) ;
+    if (Sys.file_exists path) then (let acc = read_whole_file path in if not(String.equal blob acc) then  raise Impossible_Merge) ;
     let oc = open_out path in 
     Printf.fprintf oc "%s" blob; 
     close_out oc
@@ -494,7 +497,7 @@ let merge branch =
   let commit_branch1 = read_whole_file (bitepath^"/.bite/branches/"^branch_cur^"/HEAD") in
   let commit_branch2 = read_whole_file (bitepath^"/.bite/branches/"^branch^"/HEAD") in
   checkout commit_branch1;
-  try checkout_merge commit_branch2 
+  try checkout_merge commit_branch2; branch_checkout branch;Printf.printf "here?\n"; let acc =  bite_commit ("Merged branch "^branch_cur^" and "^branch^".") "self" "self" in ()
   with 
     |Impossible_Merge -> (Printf.printf "Impossible to merge branch %s and %s: conflit dected. Reversed to commit: %s\n." branch branch_cur commit_branch1; checkout commit_branch1)
 
