@@ -212,28 +212,30 @@ let get_branch ()=
     let bitepath = find_repo "." in
     let branch = read_whole_file (bitepath^"/.bite/branch") in 
     branch
+
 let commit_list branch =
   let bitepath = find_repo "." in 
   let commits = read_lines (bitepath^"/.bite/branches/"^branch^"/list") in 
   let rec aux lst res = 
     match lst with
     |[] -> res 
-    |h1::h2::t -> aux t (h1::res)
+    |h1 :: h2 :: t -> aux t (h1 :: res)
   in 
   aux commits []
+
 let write_commit commit = 
     let rec aux lst acc = 
         match lst with 
-        | (a,b)::q::t -> aux (q::t) (acc^a^" "^b^"\n")
-        |(_,b)::[] -> (acc ^"\n"^b)
-        |[] -> failwith "not a commit"
+        | (a,b) :: q :: t -> aux (q :: t) (acc^a^" "^b^"\n")
+        | (_,b) :: [] -> (acc ^"\n"^b)
+        | [] -> failwith "not a commit"
     in aux commit ""
 
-let rec print_shit lst = 
-    match lst with 
-    | (a,b)::q  when not(String.equal a "message")-> (Printf.printf "%s %s\n" a b; print_shit q)
-    | ("message", b)::q -> (Printf.printf "%s\n" b; print_shit q)
-    |_ -> ()
+(* let rec print_shit lst =  *)
+(*     match lst with  *)
+(*     | (a,b) :: q  when not(String.equal a "message")-> (Printf.printf "%s %s\n" a b; print_shit q) *)
+(*     | ("message", b) :: q -> (Printf.printf "%s\n" b; print_shit q) *)
+(*     |_ -> () *)
 
 let read_object path sha = (*Renvoie le header et l'object*)
     let bite_path = find_repo path in 
