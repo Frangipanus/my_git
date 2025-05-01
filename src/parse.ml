@@ -3,7 +3,12 @@ open Structure
 let help_msg = "\n\tbite init [chemin] \\
                 \n\tbite commit [-m message]\\
                 \n\tbite cat-file <type d'objet> <objet>\\
-                \n\tbite hash-object [-w] [-t type d'objet] <fichier> 
+                \n\tbite hash-object [-w] [-t type d'objet] <fichier>
+                \n\tcheckout <sha>
+                \n\tbranch_create <name>
+                \n\tbranch_list
+                \n\tbranch_checkout <name>
+                \n\tmerge <branch>
                 "
 
 let print_w_help (s : string) : unit =
@@ -56,15 +61,19 @@ let parse_hash (l : string list) : command =
 let parse_checkout tl = 
   let sah = List.hd tl in 
   Chekout(sah)
+
 let parse_branch_create tl = 
   let acc = List.hd tl in 
   Branch_create(acc)
+
 let parse_branch_checkout tl = 
   let acc = List.hd tl in 
   Branch_checkout(acc)
+
 let parse_merge tl = 
     let acc = List.hd tl in 
     Merge(acc)
+
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
   match args_as_l with
