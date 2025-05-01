@@ -271,7 +271,9 @@ let rec treat_obj path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un 
 
 
 and treat_tree tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
-    if ((not(C_init.has_bite path))) then ( if Sys.file_exists path then rmrf path; mkdir path (0o755)) else ();
+  if ((not(C_init.has_bite path))) then
+    (if Sys.file_exists path then
+       rmrf path; mkdir path (0o755));
     let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
     
     List.iter (fun x -> if String.length x = 0 then () else (
@@ -296,7 +298,9 @@ let checkout sha1 =
     let bitepath = find_repo "." in 
     let branch_ici = get_branch () in 
     let commited = commit_list branch_ici in 
-    if (not (List.mem sha1 commited)) then (Printf.printf "Commit does not exist. You might be in the wrong branch.\n"; exit(0));
+    if (not (List.mem sha1 commited)) then
+      (Printf.printf "Commit does not exist. You might be in the wrong branch.\n";
+       exit(0));
     let acc = opendir bitepath in 
     try while true do 
         let fichier = readdir acc in

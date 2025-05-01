@@ -9,6 +9,7 @@ let help_msg = "\n\tbite init [chemin] \\
                 \n\tbranch_list
                 \n\tbranch_checkout <name>
                 \n\tmerge <branch>
+                \n\tlink <url>
                 "
 
 let print_w_help (s : string) : unit =
@@ -58,21 +59,15 @@ let parse_hash (l : string list) : command =
   let n = get_fname l in
   Hash (t, n, s)   
           
-let parse_checkout tl = 
-  let sah = List.hd tl in 
-  Chekout(sah)
+let parse_checkout args = Checkout (List.hd args)
 
-let parse_branch_create tl = 
-  let acc = List.hd tl in 
-  Branch_create(acc)
+let parse_branch_create args = Branch_create (List.hd args)
 
-let parse_branch_checkout tl = 
-  let acc = List.hd tl in 
-  Branch_checkout(acc)
+let parse_branch_checkout args = Branch_checkout (List.hd args)
+ 
+let parse_merge args =  Merge (List.hd args)
 
-let parse_merge tl = 
-    let acc = List.hd tl in 
-    Merge(acc)
+let parse_link args = Link (List.hd args) 
 
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
@@ -91,6 +86,7 @@ let parse_bite () : command =
       | "branch_checkout" -> parse_branch_checkout tl 
       | "merge" -> parse_merge tl
       | "remove" -> Remove(List.hd tl)
+      | "link" -> parse_link tl
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 
