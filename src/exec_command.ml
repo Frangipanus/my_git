@@ -26,4 +26,6 @@ let exec_command (c : command) : unit =
   | Merge(s) -> Object_manager.merge s
   | Remove(s) -> Object_manager.delete_branch s
   | Link serv -> Link.link serv
+  | Push -> ignore (Sys.command "./../bin/client push")
+  | Backup url ->  ignore (Sys.command ("./../bin/client backup"^url))
   | _ -> print_string "pas implé"; exit 2

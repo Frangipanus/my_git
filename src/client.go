@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"encoding/json"
 )
 
 
@@ -62,7 +63,6 @@ func uploadFile(filePath string, relPath string, url string) error {
 	if err != nil {
 		return fmt.Errorf("erreur fermeture writer : %w", err)
 	}
-	
 	req, err := http.NewRequest("POST", url, &body)
 	if err != nil {
 		return fmt.Errorf("erreur création requête : %w", err)
@@ -79,33 +79,86 @@ func uploadFile(filePath string, relPath string, url string) error {
 }
 
 
+func iterupload (folderPath string)  {
+	return
+}
+
+func downloadFile(url, dest string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	err = os.MkdirAll(filepath.Dir(dest), os.ModePerm)
+	if err != nil {
+		return err
+	}
+	out, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
 func main() {
 	// Faudra bouger ça en gros, pour mettre tous les fichiers suivis par le commit
-	dirn, errg := os.Getwd()
-	if errg != nil {
-		fmt.Println(errg) 
-	}
-	folderPath, errf := findBite(dirn)
-	if errf != nil {
-		fmt.Println(errf) 
-	}
-	// changer ça quand on déploie, par exemple eleves.ens.fr/
-	remoteUrl := fmt.Sprintf("http://%s:8080/upload", getUrl(folderPath))
-	// Parcourt tous les fichiers du dossier
-	err := filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
+	args := os.Args[1:]
+	if args[0] == "push" {
+		dirn, errg := os.Getwd()
+		if errg != nil {
+			fmt.Println(errg) 
+		}
+		folderPath, errf := findBite(dirn)
+		if errf != nil {
+			fmt.Println(errf) 
+		}
+		// changer ça quand on déploie, par exemple eleves.ens.fr/
+		remoteUrl := fmt.Sprintf("http://%s:8080/upload", getUrl(folderPath))
+		// Parcourt tous les fichiers du dossier
+		err := filepath.Walk(folderPath,
+			(func (path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() {
+					return nil
+				}
+				relPath, err := filepath.Rel(folderPath, path)
+				if err != nil {
+					return err
+				}
+				return uploadFile(path,relPath,remoteUrl)
+			}))	
 		if err != nil {
-			return err
+			fmt.Printf("Erreur lors de l'upload : %v\n", err)
 		}
-		if info.IsDir() {
-			return nil
+	}
+	if args[0] == "backup" {
+		if len(args) < 2 {
+			fmt.Printf("Nom du serveur distant manquant. \nbite backup <url>")
 		}
-		relPath, err := filepath.Rel(folderPath, path)
+		baseUrl := args[1]
+		listUrl := fmt.Sprintf("http://%s:8080/list", baseUrl)
+		resp, err := http.Get(listUrl)
 		if err != nil {
-			return err
+			panic(err)
 		}
-		return uploadFile(path,relPath,remoteUrl)
-	})	
-	if err != nil {
-		fmt.Printf("Erreur lors de l'upload : %v\n", err)
+		defer resp.Body.Close()
+		var files []string
+		err = json.NewDecoder(resp.Body).Decode(&files)
+		if err != nil {
+			panic(err)
+		}
+		iterUrl := fmt.Sprintf("http://%s:8080/store/", baseUrl)
+		for _, file := range files {
+			err := downloadFile(iterUrl+file, ".bite/"+file)
+			if err != nil {
+				fmt.Println("Erreur lors du téléchargement", err)
+			}
+			fmt.Printf("%s téléchargé [*]\n", file)
+		}
 	}
 }
+	

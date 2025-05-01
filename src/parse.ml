@@ -69,6 +69,10 @@ let parse_merge args =  Merge (List.hd args)
 
 let parse_link args = Link (List.hd args) 
 
+let parse_backup args = Backup (List.hd args)
+
+let parse_push = Push 
+
 let parse_bite () : command =
   let args_as_l = List.tl @@ Array.to_list @@ Sys.argv in
   match args_as_l with
@@ -87,6 +91,8 @@ let parse_bite () : command =
       | "merge" -> parse_merge tl
       | "remove" -> Remove(List.hd tl)
       | "link" -> parse_link tl
+      | "backup" -> parse_backup tl
+      | "push" -> parse_push
       | _ -> print_w_help ("Commande "^h^" inconnue"); exit 1)
   | _ -> print_w_help "Aucune commande entrée"; exit 1
 

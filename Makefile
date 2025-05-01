@@ -1,3 +1,13 @@
-.PHONY: clean
+.PHONY: all clean build client
+
+all: clean build client
+
 clean:
-  rm -rf *.o
+	dune clean
+
+build:
+	dune build
+
+client:
+	go build -o bin/client src/client.go
+

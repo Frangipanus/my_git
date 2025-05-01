@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"encoding/json"
 )
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,10 +48,31 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func listHandler(w http.ResponseWriter, r *http.Request) {
+	files := []string{}
+	err := filepath.Walk("store", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			rel, _ := filepath.Rel("store", path)
+			files = append(files, rel)
+		}
+		return nil
+	})
+	if err != nil {
+		http.Error(w, "Erreur de lecture des fichiers", 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(files)
+}
+
 func main() {
 	fs := http.FileServer(http.Dir("."))
 	http.Handle("/", fs)
 	http.HandleFunc("/upload", uploadHandler)
+	http.HandleFunc("/list", listHandler)
 	fmt.Printf("Serveur démarré à http://localhost:8080\n")
 	_ = http.ListenAndServe("localhost:8080", nil)	
 }

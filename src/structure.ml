@@ -4,6 +4,8 @@ type conf = A
 type repo = { path : string; conf : conf}
 
 type command =
+  | Push
+  | Backup of string
   | Init of string 
   | Add of string list
   | Cat of string * string
