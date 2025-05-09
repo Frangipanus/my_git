@@ -304,8 +304,17 @@ let checkout sha1 =
     let acc = opendir bitepath in 
     try while true do 
         let fichier = readdir acc in
-        if (not(Sys.is_directory fichier) && (not(String.equal fichier "mygit.exe")) && (not(String.equal ".biteignore" fichier))) then (let accu = bitepath^"/"^fichier in unlink accu) else(
-        if (Sys.is_directory fichier) && (not(String.equal ".biteignore" fichier)) && (not(String.equal ".bite" fichier)) &&(not(String.equal "." fichier) && (not(String.equal ".." fichier))) then (rmrf (bitepath^"/"^fichier)))
+        if (not(Sys.is_directory fichier) &&
+           (not(String.equal fichier "mygit.exe")) &&
+           (not(String.equal ".biteignore" fichier))) then
+          (let accu = bitepath^"/"^fichier in unlink accu) else(
+          if (Sys.is_directory fichier)
+             && (not(String.equal ".biteignore" fichier))
+             && (not(String.equal ".bite" fichier))
+             && (not(String.equal "." fichier)
+             && (not(String.equal ".." fichier)))
+          then
+            (rmrf (bitepath^"/"^fichier)))
         done
     with
         |End_of_file -> (
@@ -325,33 +334,64 @@ let rec bite_commit message author commitor =
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
         let file = readdir acc in 
-        if ((String.equal file ".") || (String.equal file "..") ||(String.equal file ".bite") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")||(String.equal file ".biteignore")) then () 
+        if ((String.equal file ".")
+            || (String.equal file "..")
+            || (String.equal file ".bite")
+            || (String.equal file "_ILP_tree")
+            || (String.equal file "mygit.exe")
+            || (String.equal file ".biteignore"))
+        then
+          () 
         else ( 
-            let sah = (if Sys.is_directory (path^"/"^file)
-                         then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
-                         else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file) )
-            in Printf.fprintf tree_ici "%s\n" sah; 
+          let sah =
+            (if Sys.is_directory (path^"/"^file)
+             then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
+             else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
+          in Printf.fprintf tree_ici "%s\n" sah; 
         )
     done 
     with 
-    |End_of_file -> (close_out tree_ici; let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in 
-                    let sah_tree = comp_obj path tree_txt ("tree"^space^(string_of_int (String.length tree_txt))^nul) in 
-                    unlink (path^"/"^"_ILP_tree");
-                    let commited = [|("tree", sah_tree); ("Author: ", author); ("Commitor: ", commitor); ("message", message)|] in 
-                    let text_commit = write_commit (Array.to_list commited) in 
-                    let sha = comp_obj path text_commit ("commit"^space^(string_of_int (String.length text_commit))^nul) in 
-                    let branch = get_branch () in 
-                    let already = commit_list branch in 
-                    if (List.mem sha already) && (String.equal sha (get_last_commit ()) ) then (Printf.printf "Already up to date.\n"; exit(0));
-                    let oc = open_out (path^"/.bite/HEAD") in Printf.fprintf oc "%s" sha; close_out oc;
-                    let branch_cur = get_branch () in 
-                    let oc2 = open_out (path^"/.bite/branches/"^branch_cur^"/HEAD") in 
-                    Printf.fprintf oc2 "%s" sha; close_out oc2;
-                    let str_acc = read_whole_file (path^"/.bite/branches/"^branch_cur^"/list") in 
-                    let to_print = (if (String.length str_acc) >0 then sha^"\n"^message^"\n"^str_acc else sha^"\n"^message  )in 
-                    let oc = open_out (path^"/.bite/branches/"^branch_cur^"/list") in 
-                    Printf.fprintf oc "%s" to_print; close_out oc;
-                    Printf.printf "Commit was a sucess.\n";
+    | End_of_file ->
+       (close_out tree_ici;
+        let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in
+        let h = "tree"^space^(string_of_int @@ String.length tree_txt)^nul in 
+        let sah_tree =
+          comp_obj
+            path
+            tree_txt
+            h
+        in 
+        unlink (path^"/"^"_ILP_tree");
+        let commited =
+          [|("tree", sah_tree)
+          ; ("Author: ", author)
+          ; ("Commitor: ", commitor)
+          ; ("message", message)|] in 
+        let text_commit = write_commit (Array.to_list commited) in
+        let h = "commit"^space^(string_of_int @@ String.length text_commit)^nul in 
+        let sha = comp_obj path text_commit h in 
+        let branch = get_branch () in 
+        let already = commit_list branch in 
+        if (List.mem sha already)
+           && (String.equal sha (get_last_commit ()))
+        then
+          (Printf.printf "Already up to date.\n"; exit(0));
+        let oc = open_out (path^"/.bite/HEAD") in
+        Printf.fprintf oc "%s" sha; close_out oc;
+        let branch_cur = get_branch () in 
+        let oc2 = open_out (path^"/.bite/branches/"^branch_cur^"/HEAD") in 
+        Printf.fprintf oc2 "%s" sha; close_out oc2;
+        let str_acc =
+          read_whole_file (path^"/.bite/branches/"^branch_cur^"/list") in 
+        let to_print =
+          (if (String.length str_acc) >0
+           then
+             sha^"\n"^message^"\n"^str_acc
+           else
+             sha^"\n"^message  )in 
+        let oc = open_out (path^"/.bite/branches/"^branch_cur^"/list") in 
+        Printf.fprintf oc "%s" to_print; close_out oc;
+        Printf.printf "Commit was a sucess.\n";
                     sha
                      )
 
@@ -360,53 +400,64 @@ and treat_dir path =
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
         let file = readdir acc in 
-        if ((String.equal file ".") || (String.equal file "..") || (String.equal file "_ILP_tree") ||(String.equal file "mygit.exe")) then () 
+        if ((String.equal file ".")
+            || (String.equal file "..")
+            || (String.equal file "_ILP_tree")
+            ||(String.equal file "mygit.exe"))
+        then
+          () 
         else ( 
-            let sah = (if Sys.is_directory (path^"/"^file)
-                         then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
-                         else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file) )
-            in Printf.fprintf tree_ici "%s\n" sah; 
+          let sah =
+            (if Sys.is_directory (path^"/"^file)
+             then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
+             else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
+          in Printf.fprintf tree_ici "%s\n" sah; 
         )
     done 
     with 
-    |End_of_file -> (close_out tree_ici; let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in 
-                    let sah_tree = comp_obj path tree_txt ("tree"^space^(string_of_int (String.length tree_txt))^nul) in 
-                    unlink (path^"/"^"_ILP_tree");
-                    sah_tree
-                     )
-
+    | End_of_file ->
+       (close_out tree_ici;
+        let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in 
+        let h = "tree"^space^(string_of_int @@ String.length tree_txt)^nul in 
+        let sah_tree = comp_obj path tree_txt h in 
+        unlink (path^"/"^"_ILP_tree");
+        sah_tree
+       )
 and treat_blob path = 
     let text = read_whole_file path in 
-    comp_obj (toutsaufledernier (String.split_on_char '/' path) "/") text ("blob"^space^(string_of_int (String.length text))^nul)
+    comp_obj
+      (toutsaufledernier (String.split_on_char '/' path) "/")
+      text
+      ("blob"^space^(string_of_int (String.length text))^nul)
     
-
 let branch_list path = 
   let bitepath = find_repo path in 
   let branch_cur = get_branch () in 
   let acc = opendir (bitepath^"/.bite/branches") in 
   try while true do 
     let fichier = readdir acc in 
-    if (not(String.equal "." fichier) && not(String.equal ".." fichier)) then (
-      if (String.equal fichier branch_cur) then Printf.printf ("*");
-    Printf.printf "%s\n" fichier)
-  done 
+    if (not(String.equal "." fichier) && not(String.equal ".." fichier))
+    then
+     (if (String.equal fichier branch_cur) then Printf.printf ("*");
+      Printf.printf "%s\n" fichier)
+      done 
   with
-  |End_of_file -> () 
+  | End_of_file -> () 
 
 let get_branch_list path = 
   let bitepath = find_repo path in 
   let acc = opendir (bitepath^"/.bite/branches") in 
   let rec aux dir res = 
     try let fichier = readdir acc in 
-    if (not(String.equal "." fichier) && not(String.equal ".." fichier)) then 
-      aux dir (fichier::res)
-  else
-    aux dir res
+        if (not(String.equal "." fichier) && not(String.equal ".." fichier))
+        then 
+          aux dir (fichier::res)
+        else
+          aux dir res
     with 
-    |End_of_file -> res 
+    | End_of_file -> res 
   in 
   aux acc []
-
 
 let git_log ()= 
     let branch = get_branch () in
@@ -414,8 +465,9 @@ let git_log ()=
     let commits = read_lines (path^"/.bite/branches/"^branch^"/list") in 
     let rec aux lst = 
       match lst with 
-      |[] -> ()
-      |h1::h2::t -> (Printf.printf "Commit hash: %s\nCommit message:\n %s \n" h1 h2; aux t)
+      | [] -> ()
+      | h1 :: h2 :: t ->
+         (Printf.printf "Commit hash: %s\nCommit message:\n %s \n" h1 h2; aux t)
     in 
     aux commits 
 
@@ -423,20 +475,20 @@ let git_log ()=
 let branch_checkout name = 
   let lst = get_branch_list "." in
   let bitepath = find_repo "." in  
-  if (List.mem name lst) then (
+  if (List.mem name lst)
+  then
     let oc = open_out (bitepath^"/.bite/branch") in 
     Printf.fprintf  oc "%s" name; close_out oc;
     Printf.printf "Switched to branch %s.\n" name
-  )
   else
-    (Printf.printf "Branch %s does not exist. You can create it with command branch_create.\n" name)
+    Printf.printf
+      "Branch %s does not exist. You can create it with command branch_create.\n"
+      name
     
-    
-
 let branch_create name = 
   let lst = get_branch_list "." in
   if (List.mem name lst) then (Printf.printf "%s is already a branch.\n" name)
-  else (
+  else 
     mkdir (".bite/branches/"^name) 0o770;
     let _ = openfile (".bite/branches/"^name^"/HEAD") [O_CREAT] 0o770 in
     let _ = openfile (".bite/branches/"^name^"/list") [O_CREAT] 0o770 in 
@@ -444,10 +496,8 @@ let branch_create name =
     branch_checkout name;
     let _ = bite_commit ("Branch "^name^" was created.") "self" "self" in 
     branch_checkout acc;
-      Printf.printf "Branch %s was succesfully created.\n" name    
-  )
-
-
+    Printf.printf "Branch %s was succesfully created.\n" name    
+  
 exception Impossible_Merge
 
 let rec treat_obj2 path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un file ou un dossier*)
@@ -459,7 +509,6 @@ let rec treat_obj2 path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un
             |"tree" -> treat_tree2 obj path 
             |_ -> failwith "not yet")
     else
-        (
         let lst = String.split_on_char '/' path in 
         let head, obj = read_object (toutsaufledernier lst "/") sha in 
         let types, size = read_header head in
@@ -467,27 +516,31 @@ let rec treat_obj2 path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un
           | "blob" -> treat_blob2 obj path
           | "tree" -> treat_tree2 obj path 
           |_ -> failwith "not yet"
-        )
+        
 
 
 and treat_tree2 tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
-    if ((not(C_init.has_bite path))) then (if Sys.file_exists path then () else  mkdir path (0o755)) else ();
-    let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
-    
-    List.iter (fun x -> if String.length x = 0 then () else (
-                let lst = String.split_on_char (space.[0]) x in 
-              let auto = List.hd lst in  
-              let acc = toutsauflepremier lst space in 
-              let lst2 = String.split_on_char (nul.[0]) acc in 
-              let sha = List.hd lst2 in 
-              let path2 = path^"/"^(toutsauflepremier lst2 nul) in 
-              treat_obj2 path2 sha)) content
-
+  if not @@ C_init.has_bite path
+  then
+    (if Sys.file_exists path then ()
+     else  mkdir path (0o755)) else ();
+  let content = String.split_on_char '\n' tree in (*Une liste des triplet de la forme (autorisation, sha, path)*)
+  List.iter (fun x -> if String.length x = 0 then () else (
+                     let lst = String.split_on_char (space.[0]) x in 
+                     let auto = List.hd lst in  
+                     let acc = toutsauflepremier lst space in 
+                     let lst2 = String.split_on_char (nul.[0]) acc in 
+                     let sha = List.hd lst2 in 
+                     let path2 = path^"/"^(toutsauflepremier lst2 nul) in 
+                     treat_obj2 path2 sha)) content
 and treat_blob2 blob path= 
-    if (Sys.file_exists path) then (let acc = read_whole_file path in if not(String.equal blob acc) then  raise Impossible_Merge) ;
-    let oc = open_out path in 
-    Printf.fprintf oc "%s" blob; 
-    close_out oc
+  if (Sys.file_exists path)
+  then
+    (let acc = read_whole_file path in
+     if not(String.equal blob acc) then raise Impossible_Merge) ;
+  let oc = open_out path in 
+  Printf.fprintf oc "%s" blob; 
+  close_out oc
 
 let checkout_merge sha1 = 
   let bitepath = find_repo "." in 
@@ -496,31 +549,51 @@ let checkout_merge sha1 =
   let types, size = read_header head in
   assert (String.equal types "commit");
   let lst_assoc = parse_commit obj in 
-  List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj2 "." b else ()) lst_assoc
+  List.iter
+    (fun (a,b) -> if (String.equal a "tree") then treat_obj2 "." b)
+    lst_assoc
       
-  
-
-
     
 let merge branch = 
   let bitepath = find_repo "." in 
   let branch_cur = get_branch () in 
-  if (String.equal branch_cur branch ) then (Printf.printf "Can't merge with self\n"; exit(0));
+  if (String.equal branch_cur branch )
+  then
+    (Printf.printf "Can't merge with self\n"; exit(0));
   let branches = get_branch_list "." in 
-  if not(List.mem branch branches) then (Printf.printf "Branch %s does not exist" branch; exit(0));
-  let commit_branch1 = read_whole_file (bitepath^"/.bite/branches/"^branch_cur^"/HEAD") in
-  let commit_branch2 = read_whole_file (bitepath^"/.bite/branches/"^branch^"/HEAD") in
+  if not (List.mem branch branches)
+  then
+    (Printf.printf "Branch %s does not exist" branch; exit(0));
+  let h_loc =  bitepath^"/.bite/branches/" in 
+  let commit_branch1 = read_whole_file (h_loc^branch_cur^"/HEAD") in
+  let commit_branch2 = read_whole_file (h_loc^branch^"/HEAD") in
   checkout commit_branch1;
-  try checkout_merge commit_branch2; branch_checkout branch; let acc =  bite_commit ("Merged branch "^branch_cur^" and "^branch^".") "self" "self" in ()
+  try
+    checkout_merge commit_branch2; branch_checkout branch;
+    ignore
+      (bite_commit
+         ("Merged branch "^branch_cur^" and "^branch^".")
+         "self" "self")
   with 
-    |Impossible_Merge -> (Printf.printf "Impossible to merge branch %s and %s: conflit dected. Reversed to commit: %s\n." branch branch_cur commit_branch1; checkout commit_branch1)
+  | Impossible_Merge ->
+     Printf.printf
+       "Impossible to merge branch %s and %s: conflit dected.
+        Reversed to commit: %s\n."
+        branch
+        branch_cur
+        commit_branch1;
+      checkout commit_branch1
 
 
 let delete_branch name = 
     let bitepath = find_repo "." in 
     let lst = get_branch_list "." in 
     let branch = get_branch () in 
-    if (String.equal branch name) then (Printf.printf "Cannot remove the branch you are on.\n"; exit(0));
-    if (not(List.mem name lst)) then (Printf.printf "Branch %s does not exist.\n" name; exit(0))
+    if (String.equal branch name)
+    then
+      (Printf.printf "Cannot remove the branch you are on.\n"; exit(0));
+    if (not(List.mem name lst))
+    then
+      (Printf.printf "Branch %s does not exist.\n" name; exit(0))
     else 
-      (rmrf (bitepath^"/.bite/branches/"^name))
+      rmrf (bitepath^"/.bite/branches/"^name)
