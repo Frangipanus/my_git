@@ -1,5 +1,6 @@
 package main
 
+//Lancer dans le répertoire avec le .bite stocké
 import (
 	"fmt"
 	"io"
@@ -37,7 +38,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer dst.Close()
-	
+
 	_, err = io.Copy(dst, file)
 	if err != nil {
 		http.Error(w, "Erreur écriture fichier", http.StatusInternalServerError)
