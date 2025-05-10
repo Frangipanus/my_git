@@ -51,25 +51,24 @@ let read_whole_file filename =
 let read_lines (file_name : string) : string list =
     In_channel.with_open_text file_name In_channel.input_lines
 
-
-
-
 let buffer_size = 4096
+
 let compress_file source dest =
-    let gz_file = Gzip.open_out ~level:9 dest in
-    let buffer = Bytes.make buffer_size '*' in
-    let ic = In_channel.open_bin source in
-    let rec aux () =
-      let len = In_channel.input ic buffer 0 buffer_size in
-      if len <> 0 then
-        begin
-          Gzip.output gz_file buffer 0 len;
-          aux ()
+  let gz_file = Gzip.open_out ~level:9 dest in
+  let buffer = Bytes.make buffer_size '*' in
+  let ic = In_channel.open_bin source in
+  let rec aux () =
+    let len = In_channel.input ic buffer 0 buffer_size in
+    if len <> 0 then
+      begin
+        Gzip.output gz_file buffer 0 len;
+        aux ()
         end
-    in
-    aux ();
-    Gzip.close_out gz_file;
-    In_channel.close ic
+  in
+  aux ();
+  Gzip.close_out gz_file;
+  In_channel.close ic
+
 let decompress_file source dest =
   let gz_file = Gzip.open_in source in
   let buffer = Bytes.make buffer_size '*' in
@@ -308,7 +307,7 @@ let checkout sha1 =
            && (not(String.equal ".biteignore" fichier))
            && (not(String.equal ".bite" fichier))
            && (not(String.equal "." fichier)
-               && (not(String.equal ".." fichier)))
+           && (not(String.equal ".." fichier)))
         then
           (rmrf (bitepath^"/"^fichier)))
     done
