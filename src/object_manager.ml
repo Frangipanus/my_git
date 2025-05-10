@@ -231,12 +231,6 @@ let write_commit commit =
         | [] -> failwith "not a commit"
     in aux commit ""
 
-(* let rec print_shit lst =  *)
-(*     match lst with  *)
-(*     | (a,b) :: q  when not(String.equal a "message")-> (Printf.printf "%s %s\n" a b; print_shit q) *)
-(*     | ("message", b) :: q -> (Printf.printf "%s\n" b; print_shit q) *)
-(*     |_ -> () *)
-
 let read_object path sha = (*Renvoie le header et l'object*)
     let bite_path = find_repo path in 
     let object_with_header = decomp_obj bite_path sha in     
@@ -294,67 +288,65 @@ let get_last_commit () =
   let bitepath = find_repo "." in 
   read_whole_file (bitepath^"/.bite/HEAD")
 
-let checkout sha1 = 
-    let bitepath = find_repo "." in 
-    let branch_ici = get_branch () in 
-    let commited = commit_list branch_ici in 
-    if (not (List.mem sha1 commited)) then
-      (Printf.printf "Commit does not exist. You might be in the wrong branch.\n";
-       exit(0));
-    let acc = opendir bitepath in 
-    try while true do 
-        let fichier = readdir acc in
-        if (not(Sys.is_directory fichier) &&
-           (not(String.equal fichier "mygit.exe")) &&
-           (not(String.equal ".biteignore" fichier))) then
-          (let accu = bitepath^"/"^fichier in unlink accu) else(
-          if (Sys.is_directory fichier)
-             && (not(String.equal ".biteignore" fichier))
-             && (not(String.equal ".bite" fichier))
-             && (not(String.equal "." fichier)
-             && (not(String.equal ".." fichier)))
-          then
-            (rmrf (bitepath^"/"^fichier)))
-        done
-    with
-        |End_of_file -> (
-    let head, obj = read_object "." sha1 in 
-    let types, size = read_header head in
+let checkout sha1 =
+  let bitepath = find_repo "." in 
+  let branch_ici = get_branch () in
+  Printf.printf "%s\n" branch_ici; 
+  let commited = commit_list branch_ici in 
+  if (not (List.mem sha1 commited)) then
+    (Printf.printf "Commit does not exist. You might be in the wrong branch.\n";
+     exit(0));
+  let acc = opendir bitepath in 
+  try
+    while true do 
+      let fichier = readdir acc in
+      if (not(Sys.is_directory fichier)
+          && (not(String.equal fichier "bite.exe"))
+          && (not(String.equal ".biteignore" fichier))) then
+        (let accu = bitepath^"/"^fichier in unlink accu) else(
+        if (Sys.is_directory fichier)
+           && (not(String.equal ".biteignore" fichier))
+           && (not(String.equal ".bite" fichier))
+           && (not(String.equal "." fichier)
+               && (not(String.equal ".." fichier)))
+        then
+          (rmrf (bitepath^"/"^fichier)))
+    done
+  with
+  | End_of_file -> 
+     let head, obj = read_object "." sha1 in 
+     let types, size = read_header head in
+     assert (String.equal types "commit");
+      let lst_assoc = parse_commit obj in 
+      List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ()) lst_assoc
 
-    assert (String.equal types "commit");
-    let lst_assoc = parse_commit obj in 
-    
-    List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ()) lst_assoc
-        )
-
-    
 let rec bite_commit message author commitor =
-    let path = find_repo "." in 
-    let acc = opendir path in 
+  let path = find_repo "." in 
+  let acc = opendir path in 
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
-        let file = readdir acc in 
-        if ((String.equal file ".")
-            || (String.equal file "..")
-            || (String.equal file ".bite")
-            || (String.equal file "_ILP_tree")
-            || (String.equal file "mygit.exe")
-            || (String.equal file ".biteignore"))
+          let file = readdir acc in 
+          if ((String.equal file ".")
+              || (String.equal file "..")
+              || (String.equal file ".bite")
+              || (String.equal file "_ILP_tree")
+              || (String.equal file "bite.exe")
+              || (String.equal file ".biteignore"))
         then
           () 
-        else ( 
-          let sah =
-            (if Sys.is_directory (path^"/"^file)
-             then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
-             else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
-          in Printf.fprintf tree_ici "%s\n" sah; 
-        )
-    done 
+          else ( 
+            let sah =
+              (if Sys.is_directory (path^"/"^file)
+               then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
+               else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
+            in Printf.fprintf tree_ici "%s\n" sah; 
+          )
+        done 
     with 
     | End_of_file ->
        (close_out tree_ici;
         let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in
-        let h = "tree"^space^(string_of_int @@ String.length tree_txt)^nul in 
+        let h = "tree"^space^(string_of_int @@ String.length tree_txt)^nul in
         let sah_tree =
           comp_obj
             path
@@ -403,7 +395,7 @@ and treat_dir path =
         if ((String.equal file ".")
             || (String.equal file "..")
             || (String.equal file "_ILP_tree")
-            ||(String.equal file "mygit.exe"))
+            ||(String.equal file "bite.exe"))
         then
           () 
         else ( 
@@ -517,8 +509,6 @@ let rec treat_obj2 path sha = (*Path est l'endroit ou c'est mis. Ca peut etre un
           | "tree" -> treat_tree2 obj path 
           |_ -> failwith "not yet"
         
-
-
 and treat_tree2 tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
   if not @@ C_init.has_bite path
   then
