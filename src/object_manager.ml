@@ -277,11 +277,10 @@ and treat_tree tree path  = (*tree est l'arbres*) (*tree = mode shaNULpath *)
               let sha = List.hd lst2 in 
               let path2 = path^"/"^(toutsauflepremier lst2 nul) in 
               treat_obj path2 sha)) content
-
-and treat_blob blob path= 
-    let oc = open_out path in 
-    Printf.fprintf oc "%s" blob; 
-    close_out oc
+and treat_blob blob path=
+  let oc = open_out path in 
+  Printf.fprintf oc "%s" blob; 
+  close_out oc
 
 let get_last_commit () = 
   let bitepath = find_repo "." in 
@@ -414,13 +413,15 @@ and treat_dir path =
         unlink (path^"/"^"_ILP_tree");
         sah_tree
        )
-and treat_blob path = 
-    let text = read_whole_file path in 
-    comp_obj
-      (toutsaufledernier (String.split_on_char '/' path) "/")
-      text
-      ("blob"^space^(string_of_int (String.length text))^nul)
-    
+and treat_blob path =
+  let ppath = String.sub path 2 ((String.length path) - 2) in 
+  Printf.printf "[*] Commit de %s\n" ppath; 
+  let text = read_whole_file path in 
+  comp_obj
+    (toutsaufledernier (String.split_on_char '/' path) "/")
+    text
+    ("blob"^space^(string_of_int (String.length text))^nul)
+
 let branch_list path = 
   let bitepath = find_repo path in 
   let branch_cur = get_branch () in 
