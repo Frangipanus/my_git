@@ -1,4 +1,4 @@
-
+open Compresse
 open Unix
 open Str
 
@@ -54,38 +54,11 @@ let read_lines (file_name : string) : string list =
 let buffer_size = 4096
 
 let compress_file source dest =
-  let gz_file = Gzip.open_out ~level:9 dest in
-  let buffer = Bytes.make buffer_size '*' in
-  let ic = In_channel.open_bin source in
-  let rec aux () =
-    let len = In_channel.input ic buffer 0 buffer_size in
-    if len <> 0 then
-      begin
-        Gzip.output gz_file buffer 0 len;
-        aux ()
-        end
-  in
-  aux ();
-  Gzip.close_out gz_file;
-  In_channel.close ic
+  compresser source dest
 
 let decompress_file source dest =
-  let gz_file = Gzip.open_in source in
-  let buffer = Bytes.make buffer_size '*' in
-  let oc = open_out_bin dest in
-  let rec aux () =
-    let len = Gzip.input gz_file buffer 0 buffer_size in
-    if len <> 0 then
-      begin
-        output oc buffer 0 len;
-        aux ()
-      end
-  in
-  aux ();
- 
+  decompresser source dest
 
-  Gzip.close_in gz_file;
-  close_out oc
 
   let toutsaufledernier lst sep= 
     let rec aux lst1 res = 
@@ -320,7 +293,7 @@ let checkout sha1 =
 
 let ignore_file (file : string) : bool = 
   let base_to_ignore =
-    List.map regexp_string ["."; ".."; ".bite"; "_ILP_tree"; "bite"; ".biteignore"] in
+    List.map regexp_string ["."; ".."; ".bite"; "_ILP_tree"; "bite"; "bite.exe"; ".biteignore"] in
   let bite_to_ignore =
     List.map regexp (Utils.read_lines (find_repo "."^"/.bite/biteignore")) in
   let to_ignore = base_to_ignore @ bite_to_ignore in
