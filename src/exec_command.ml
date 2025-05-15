@@ -27,5 +27,5 @@ let exec_command (c : command) : unit =
   | Remove(s) -> Object_manager.delete_branch s
   | Link serv -> Link.link serv
   | Push -> ignore (Sys.command "client push")
-  | Backup url ->  ignore (Sys.command ("client backup"^url))
+  | Backup url ->  ignore (Sys.command ("client backup "^url))
   | _ -> print_string "pas implé"; exit 2

@@ -1,8 +1,10 @@
 open Structure
 
-let help_msg = "\n\tbite init [chemin] \\
-                \n\tbite commit [-m message]\\
-                \n\tbite cat-file <type d'objet> <objet>\\
+let help_msg = "
+                Backup Integration Tool Engine
+                \n\tbite init [chemin] \
+                \n\tbite commit [-m message]\
+                \n\tbite cat-file <type d'objet> <objet>\
                 \n\tbite hash-object [-w] [-t type d'objet] <fichier>
                 \n\tcheckout <sha>
                 \n\tbranch_create <name>
@@ -10,6 +12,8 @@ let help_msg = "\n\tbite init [chemin] \\
                 \n\tbranch_checkout <name>
                 \n\tmerge <branch>
                 \n\tlink <url>
+                \n\tpush
+                \n\tbackup <url>
                 "
 
 let print_w_help (s : string) : unit =

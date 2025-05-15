@@ -78,11 +78,6 @@ func uploadFile(filePath string, relPath string, url string) error {
 	return nil
 }
 
-
-func iterupload (folderPath string)  {
-	return
-}
-
 func downloadFile(url, dest string) error {
 	resp, err := http.Get(url)
 	if err != nil {
