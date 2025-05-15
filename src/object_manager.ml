@@ -1,6 +1,6 @@
 
 open Unix
-
+open Str
 
 (****************Fonctions utilitaires sur les texte et repo***********************************)
 let rec rmrf path = match Sys.is_directory path with
@@ -318,41 +318,42 @@ let checkout sha1 =
       let lst_assoc = parse_commit obj in 
       List.iter (fun (a,b) -> if (String.equal a "tree") then treat_obj "." b else ()) lst_assoc
 
+let ignore_file (file : string) : bool = 
+  let base_to_ignore =
+    List.map regexp_string ["."; ".."; ".bite"; "_ILP_tree"; "bite"; ".biteignore"] in
+  let bite_to_ignore =
+    List.map regexp (Utils.read_lines (find_repo "."^"/.bite/biteignore")) in
+  let to_ignore = base_to_ignore @ bite_to_ignore in
+  List.exists (fun r -> string_match r file 0) to_ignore
+  
 let rec bite_commit message author commitor =
   let path = find_repo "." in 
   let acc = opendir path in 
-    let tree_ici = open_out (path^"/"^"_ILP_tree") in 
-    try while true do 
-          let file = readdir acc in 
-          if ((String.equal file ".")
-              || (String.equal file "..")
-              || (String.equal file ".bite")
-              || (String.equal file "_ILP_tree")
-              || (String.equal file "bite.exe")
-              || (String.equal file ".biteignore"))
-        then
-          () 
-          else ( 
+  let tree_ici = open_out (path^"/"^"_ILP_tree") in 
+  try while true do 
+        let file = readdir acc in 
+        if not (ignore_file file) then
+          ( 
             let sah =
               (if Sys.is_directory (path^"/"^file)
                then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
                else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
             in Printf.fprintf tree_ici "%s\n" sah; 
           )
-        done 
-    with 
-    | End_of_file ->
-       (close_out tree_ici;
-        let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in
-        let h = "tree"^space^(string_of_int @@ String.length tree_txt)^nul in
-        let sah_tree =
+      done 
+  with 
+  | End_of_file ->
+     (close_out tree_ici;
+      let tree_txt = read_whole_file (path^"/"^"_ILP_tree") in
+      let h = "tree"^space^(string_of_int @@ String.length tree_txt)^nul in
+      let sah_tree =
           comp_obj
             path
             tree_txt
             h
-        in 
-        unlink (path^"/"^"_ILP_tree");
-        let commited =
+      in 
+      unlink (path^"/"^"_ILP_tree");
+      let commited =
           [|("tree", sah_tree)
           ; ("Author: ", author)
           ; ("Commitor: ", commitor)
@@ -384,26 +385,20 @@ let rec bite_commit message author commitor =
         Printf.printf "Commit was a sucess.\n";
                     sha
                      )
-
 and treat_dir path = 
     let acc = opendir path in 
     let tree_ici = open_out (path^"/"^"_ILP_tree") in 
     try while true do 
-        let file = readdir acc in 
-        if ((String.equal file ".")
-            || (String.equal file "..")
-            || (String.equal file "_ILP_tree")
-            ||(String.equal file "bite.exe"))
-        then
-          () 
-        else ( 
-          let sah =
-            (if Sys.is_directory (path^"/"^file)
-             then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
-             else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
-          in Printf.fprintf tree_ici "%s\n" sah; 
-        )
-    done 
+          let file = readdir acc in
+          if not (ignore_file file) then        
+            ( 
+              let sah =
+                (if Sys.is_directory (path^"/"^file)
+                 then  "0000"^space^(treat_dir (path^"/"^file))^nul^(file) 
+                 else   "0000"^space^(treat_blob (path^"/"^file))^nul^(file))
+              in Printf.fprintf tree_ici "%s\n" sah; 
+            )
+        done 
     with 
     | End_of_file ->
        (close_out tree_ici;
