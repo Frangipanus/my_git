@@ -1,0 +1,8 @@
+(executable
+  (name bite)
+
+  (libraries unix cryptokit digestif camlzip zlib hex str)
+
+  (promote (until-clean)) 
+)
+(env (dev (flags (:standard -warn-error -A))))
