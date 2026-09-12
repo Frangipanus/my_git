@@ -1,6 +1,6 @@
 # my_git
 
-This is my Git project for the Operating Systems course, taught during the second semester of the third year of the Computer Science curriculum at ENS Ulm.
+This is my Git project for the Operating Systems course, taught during the second semester of the first year of the Computer Science curriculum at ENS Ulm.
 
 ## Commands
 
